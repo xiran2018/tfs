@@ -1,0 +1,4 @@
+# 单个文件执行命令
+python main.py -n "D:/PythonWorkSpace/tfs2excel/1. 发货清单，贾海侠，2019.04.03.xlsx" -s 2019年销量统计 -l 242
+# 多个文件执行命令
+python main.py -n "D:/PythonWorkSpace/tfs2excel/1. 发货清单，贾海侠，2019.04.03.xlsx" -s 2019年销量统计 -l 242#241#23
