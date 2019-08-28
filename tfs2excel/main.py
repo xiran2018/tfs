@@ -86,7 +86,7 @@ def generateExcel(content):
     alignment_style = Alignment(horizontal='center', vertical='center')
 
     # 定义Border边框样式
-    left, right, top, bottom = [Side(style='thin', color='0000ff')]*4
+    left, right, top, bottom = [Side(style='thin', color='000000')]*4
     border_style = Border(left=left, right=right, top=top, bottom=bottom)
 
     #第一行
@@ -95,7 +95,10 @@ def generateExcel(content):
     table.cell(row=1, column=1).font = font
     # 水平对齐 垂直对齐
     table.cell(row=1, column=1).alignment = alignment_style
+
     table.cell(row=1, column=1).border = border_style
+    # top_left_cell = table['A1']
+    # top_left_cell.border = border_style
 
     #第二行
     table.cell(row=2, column=1,value = '运输方式')
