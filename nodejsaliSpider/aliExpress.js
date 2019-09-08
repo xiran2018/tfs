@@ -5,10 +5,15 @@ const file = require('./file');
 const db = require('./dataBase');
 const fs = require('fs');
 
+let Ut = require("./sleep");
+const level = require('./level');
 
-userAndPassLists=[];
-userAndPassLists.push({'username':'yunzhongzhizi_2007@126.com','pwd':'19880202Q'});
-userAndPassLists.push({'username':'1365986138@qq.com','pwd':'jhy469411'});
+
+userAndPassLists = level.userPassLists;
+
+// userAndPassLists=[];
+// userAndPassLists.push({'username':'yunzhongzhizi_2007@126.com','pwd':'19880202Q'});
+// userAndPassLists.push({'username':'1365986138@qq.com','pwd':'jhy469411'});
 // userAndPassLists.push({'username':'965761402@qq.com','pwd':'19880202Q'});
 
 up=0; //初始的时候使用的用户名和密码
@@ -27,10 +32,15 @@ firstLevelCateroyNumberEnd=""; //获取数据的终点分类
 pageNumberStart=1; //获取数据从哪一页开始
 pageNumberEnd=1000; //获取数据在哪一页结束，默认是在1000行结束，不过命令里面的值，会覆盖这里的值
 
-level1 = 7;
-level2 = 2;
-level3 = 3;
-level4 = 3;
+level1 = level.level1;
+level2 = level.level2;
+level3 = level.level3;
+level4 = level.level4;
+
+// console.log(level1)
+// console.log(level2)
+// console.log(level3)
+// console.log(level4)
 
 headless=true;
 
@@ -38,10 +48,16 @@ function getAlreadPageNumber(){
             // 获取读到了这一页的哪一个链接了
             var temp2 = fs.readFileSync(alreadyReadPath, 'utf8');
             if(temp2!="" && temp2!='' ) {
-                splitArgs2 = temp2.split("#");
-                if (splitArgs2.length >= 5)
-                    return parseInt(splitArgs2[4]);
+                let splitArg = temp2.split("#");
+                if(splitArg.length>4 && level1==splitArg[0] && level2==splitArg[1] &&  level3==splitArg[2] &&  level4==splitArg[3]){
+                    return parseInt(splitArg[4]);
+                }
+                else{
+                    return -1;
+                }
+
             }
+            return -1;
 }
 
 
@@ -79,7 +95,7 @@ function  biaozhunUrl(linkArgs){
 }
 
 //打开分类列表，并且跳转到指定的页面
-async function openLinkAndGetInfomation(browser,linkargsonc,pageNumber){
+async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categoryName){
 
         // console.log("*************接收到页面1*******:",linkargsonc);
 
@@ -129,8 +145,8 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumber){
 
                     //在跳转框中填写数值
                     await pageOfCategory.waitFor(".jump-aera .next-input input");
-                    console.log("pageNUmber:",pageNumber)
-                    pageNumber = ""+pageNumber;
+                    console.log("pageNUmber:",pageNumberArgs)
+                    var pageNumber = ""+pageNumberArgs;
                     await pageOfCategory.type('.jump-aera .next-input input', pageNumber, {'delay': alifunc.input_time_random(100,151) - 50})
 
                     await pageOfCategory.waitFor(".jump-aera  .jump-btn");
@@ -166,26 +182,28 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumber){
                         product=productLinks[ipn];
                         productUrl = biaozhunUrl(product)
                         console.log("href:",productUrl);
-                        storeInfo = await openProductAndGetInfomation(browser,productUrl); //打开商品列表
-                        flag = storeInfo["flag"];
-                        info = storeInfo["info"];
+                        let storeInfo = await openProductAndGetInfomation(browser,productUrl); //打开商品列表
+                        let flag = storeInfo["flag"];
+                        let info = storeInfo["info"];
                         console.log(storeInfo["info"]);
-                        if(flag==1 && info!="" && info !=null && info!=undefined && info !=''){
+
+                        if(flag==1 && info.length>2 && info!="" && info !=null && info!=undefined && info !=''){
                             try{
                                 var  addSqlParams = [];
-                                addSqlParams.push(info[0]["content"])
-                                addSqlParams.push(info[8]["content"])
-                                addSqlParams.push(info[1]["content"])
-                                addSqlParams.push(info[2]["content"])
-                                addSqlParams.push(info[3]["content"])
-                                addSqlParams.push(info[4]["content"])
-                                addSqlParams.push(info[5]["content"])
-                                addSqlParams.push(info[6]["content"])
-                                addSqlParams.push(info[7]["content"])
-                                addSqlParams.push(info[9]["content"])
+                                addSqlParams.push(info[0]["content"]);
+                                addSqlParams.push(categoryName);
+                                addSqlParams.push(info[8]["content"]);
+                                addSqlParams.push(info[1]["content"]);
+                                addSqlParams.push(info[2]["content"]);
+                                addSqlParams.push(info[3]["content"]);
+                                addSqlParams.push(info[4]["content"]);
+                                addSqlParams.push(info[5]["content"]);
+                                addSqlParams.push(info[6]["content"]);
+                                addSqlParams.push(info[7]["content"]);
+                                addSqlParams.push(info[9]["content"]);
 
                                 // url，包含
-                                var  addSql = 'INSERT INTO companyInfo(companyName,storeName,shehuixinyongma,yingyezhizhao,registeraddress,daibiaoren,jiyingfanwei,createtime,dengjijiguan,url) VALUES(?,?,?,?,?,?,?,?,?,?)';
+                                var  addSql = 'INSERT INTO companyInfo(companyName,categoryName,storeName,shehuixinyongma,yingyezhizhao,registeraddress,daibiaoren,jiyingfanwei,createtime,dengjijiguan,url) VALUES(?,?,?,?,?,?,?,?,?,?,?)';
 
                                 // url，不包含
                                 // var  addSql = 'INSERT INTO companyInfo(companyName,storeName,shehuixinyongma,yingyezhizhao,registeraddress,daibiaoren,jiyingfanwei,createtime,dengjijiguan) VALUES(?,?,?,?,?,?,?,?,?)';
@@ -200,6 +218,10 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumber){
                             }
 
                         }//end of if
+                        else if(flag == 9){ //说明要重新启动浏览器
+                             console.log("需要重新启动浏览器");
+                             return {"flag":9,"info":""}; //说明要重新启动浏览器
+                        }
                         else if(flag==0){
                             console.log("数据库已经该店家信息了，只是记录位置就可以了^^^^^");
                         }
@@ -212,10 +234,10 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumber){
 
 
 
-                        changeHaveReadFile(ipn+1);
+                        changeHaveReadFile(pageNumber,ipn+1);
 
                     } //end of for
-                    return;
+                    return {"flag":1,"info":""};
                 }catch(e) {
                     // console.log(e);
 
@@ -229,18 +251,21 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumber){
 
 }
 
-function  changeHaveReadFile(productNumberInCtory){
-    alreadyReadArgs = fs.readFileSync(alreadyReadPath, 'utf8');
-
-    if(alreadyReadArgs!="" && alreadyReadArgs!=''){
-        splitArgs = alreadyReadArgs.split("#");
-        newArgs = splitArgs[0]+"#"+splitArgs[1]+"#"+splitArgs[2]+"#"+splitArgs[3]+"#"+splitArgs[4]+"#"+productNumberInCtory;
-        file.writeFileSync(alreadyReadPath,newArgs);
-    }
-    else{
-        newArgs = level1+"#"+level2+"#"+level3+"#"+level4+"#"+pageNumberStart+"#"+productNumberInCtory;
-        file.writeFileSync(alreadyReadPath,newArgs);
-    }
+function  changeHaveReadFile(pageNumber,productNumberInCtory){
+    let alreadyReadArgs = fs.readFileSync(alreadyReadPath, 'utf8');
+    let pageNumberforReal = pageNumber;
+    // if(alreadyReadArgs!="" && alreadyReadArgs!=''){
+    //     let splitArgs = alreadyReadArgs.split("#");
+    //     if(splitArg.length>4 && level1==splitArg[0] && level2==splitArg[1] &&  level3==splitArg[2] &&  level4==splitArg[3] && pageNumber==splitArgs[4]){
+    //         // console.log('：',splitArg[5]);
+    //         // let newArgs = level1+"#"+level2+"#"+level3+"#"+level4+"#"+splitArgs[4]+"#"+productNumberInCtory;
+    //         pageNumberforReal = splitArgs[4];
+    //     }else{
+    //         pageNumberforReal = pageNumberStart;
+    //     }
+    // }
+    let newArgs = level1+"#"+level2+"#"+level3+"#"+level4+"#"+pageNumberforReal+"#"+productNumberInCtory;
+    file.writeFileSync(alreadyReadPath,newArgs);
 
 }
 
@@ -301,13 +326,21 @@ async function openProductAndGetInfomation(browser,productUrl){
 
                 content=await getCompanyInfo(browser, pageProduct, credUrl); //拿到了公司信用凭证url，然后准备打开，获取信息
 
-                temp={"content":stroeName}
-                content.push(temp)
+                if(content==9){
+                    resultT={"flag":9,"info":content}; //说明要重新启动浏览器
+                }
+                else
+                {
+                    temp={"content":stroeName}
+                    content.push(temp)
 
-                temp={"content":productUrl}
-                content.push(temp)
+                    temp={"content":productUrl}
+                    content.push(temp)
 
-                resultT={"flag":1,"info":content}
+                    resultT={"flag":1,"info":content}
+                }
+
+
                 // return resultT;
                 // console.log(content);
             }
@@ -410,8 +443,8 @@ async function getAllProductLinks(mainPageArgs){
 async function getCompanyInfo(browser,mainPageCi,url){
     //以下是打开某一个界面获取信息的
     //     url = 'https://sellerjoin.aliexpress.com/credential/showcredential.htm?storeNum=3630157'
-        flagJson={"flag":0};
-        tryCount = 0; //5 次之后，开始轮训用户名称和密码
+        var flagJson={"flag":0};
+        var tryCount = 0; //5 次之后，开始轮训用户名称和密码
         var lunxun=0; // 轮训两轮用户名和密码
         while(!(flagJson["flag"]==1)){
             console.log("正在尝试获取信息:",url);
@@ -457,15 +490,21 @@ async function getCompanyInfo(browser,mainPageCi,url){
                     }
                     else
                     {
+                        up=0;//重新开始
+                        lunxun++;
 
-                        if(lunxun>=countlunxun){
+                        if(lunxun>countlunxun){
                             console.log("=======================================");
                             console.log("所有的账号轮训完毕，会等待两个小时，然后重新轮训，您也可以终止程序运行");
                             console.log("=======================================");
-                            await mainPageCi.waitFor(2*3600*1000);//等待2个小时
+                            // await mainPageCi.waitFor(2*3600*1000);//等待2个小时
+                            // await browser.close();
+                            await Ut.sleep(2000); //等待2s
+
+                            return 9;  //返回9,表示重重新启动浏览器
+
                         }
-                        up=0;//重新开始
-                        lunxun++;
+
                         // reloginJson=await reLogin(true);
                     }
 
@@ -523,7 +562,7 @@ async function moveMouseOnCategory(mainPageCg,firstLevelCateroyNumber){
 
         if(categoriesLength==2){ //如果是有2个，则有分类和促销内容
             //点击分类标签
-            page.click('.categories-content-title > span:nth-child(1)'); //点击进入商品列表目录
+            mainPageCg.click('.categories-content-title > span:nth-child(1)'); //点击进入商品列表目录
 
             mouseMoveStr='.categories-content-title > span:nth-child(1)';
         }
@@ -536,9 +575,9 @@ async function moveMouseOnCategory(mainPageCg,firstLevelCateroyNumber){
         const {top, left, bottom, right} = frameSelx.getBoundingClientRect();
         return {top, left, bottom, right}
         } , frameSel)
-        console.log(rect)
+        // console.log(rect)
 
-        const mouse = page.mouse
+        const mouse = mainPageCg.mouse
 	    await mouse.move(rect.left+5, rect.top+5,{'delay': 1000}); //移到商品分类标签，上下偏移5个像素
 
             //鼠标移动到第N个元素上
@@ -608,13 +647,16 @@ async function getLinksForOneCategory(mainPageFoc,i,j,p,q){
             // await page.goto(url);
             console.log('开始获取分类的链接信息...');
 
-            clickUrl='.categories-list-box dl:nth-child('+i+') dd .sub-cate-main .sub-cate-content .sub-cate-row:nth-child('+j+') .sub-cate-items:nth-child('+p+') dd a:nth-child('+q+')'
+            let clickUrl='.categories-list-box dl:nth-child('+i+') dd .sub-cate-main .sub-cate-content .sub-cate-row:nth-child('+j+') .sub-cate-items:nth-child('+p+') dd a:nth-child('+q+')'
             await mainPageFoc.waitFor(clickUrl)
-            urlforOnecategory = await mainPageFoc.$eval(clickUrl, node => node.getAttribute('href'));
-            return {"flag":1,"href":urlforOnecategory};
+            let urlforOnecategory = await mainPageFoc.$eval(clickUrl, node => node.getAttribute('href'));
+            let categoryName = await mainPageFoc.$eval(clickUrl, node => node.textContent);
+            return {"flag":1,"href":urlforOnecategory,"categoryName":categoryName};
         }
-        catch
+        catch(e)
         {
+            // console.log("以下错误是我主动输出调试的");
+            // console.log(e);
             return {"flag":0,"href":""};
         }
 }
@@ -649,6 +691,7 @@ async function getInformation(browser,mainPageForPu,url){
                 if(mainPageToInfo!=null && mainPageToInfo!="" && mainPageToInfo!=undefined )
                     mainPageToInfo.close();
                 console.log('222: I am in while and i catch a exception');
+                await Ut.sleep(2000); //等待2s
             }
         } //end of while
 
@@ -822,7 +865,7 @@ async function loadPage(browser,url){
     // });
     // await page.setUserAgent(
     //     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299')
-
+    var page = "";
     while(true){
         try {
             page = await browser.newPage(); //# 启动个新的浏览器页面，此会自动下载Chromeium
@@ -830,10 +873,14 @@ async function loadPage(browser,url){
             break;
         }catch(e) {
             // console.log(e);
-            console.log('1111: I am in while and i catch a exception');
-            page.close();
+            console.log('1111: I  catch a exception when loading new page');
+            await Ut.sleep(2000); //等待2s
+            if(page!=null && page != '' && page!=undefined){
+                page.close();
+            }
+
         }
-    }
+    } //end of true
 
 
 
@@ -884,6 +931,8 @@ async function loginAfterOperation(page){
 }
 
 async function login(browsr,url,userName,pass,useOtherAccoountFlag){
+
+    var page="";
 
     loginFlag = false;
     while(!loginFlag){ //如果没有登录成功
@@ -1066,7 +1115,7 @@ async function startWork() {
 
     // //切换iframe框代码
     // await page.waitFor("#alibaba-login-box")
-    browser=await loadBrowser();
+    var browser=await loadBrowser();
 
 
     // loginUrl11 = 'https://sellerjoin.aliexpress.com/credential/showcredential.htm?storeNum=3630157';
@@ -1107,8 +1156,9 @@ async function startWork() {
 
         //首先获取从哪一页开始，从表达的数值开始
         alPageNumber=getAlreadPageNumber();
-        if(isInteger(pageNumberStart) && pageNumberStart>alPageNumber)
-            pageNumberStart = alPageNumber;  //谁小就用谁
+        if(isInteger(pageNumberStart) && alPageNumber!=-1 && pageNumberStart<alPageNumber)
+            pageNumberStart = alPageNumber;  //谁大就用谁
+
 
         // argsflag = (categoryArgs==='') || (categoryArgs===null) || (categoryArgs===""); //在main函数里面得到的categoryArgs
         // // console.log(argsflag);
@@ -1183,21 +1233,36 @@ async function startWork() {
         //             for(level4=thirdNumber;level4<thirdCategoryLength+1;level4++){
 
                             while(true){
-                                 await mainPage.bringToFront()
-                                linkJson=await getLinksForOneCategory(mainPage,level1,level2,level3,level4);
-                                sflagForca=linkJson["flag"];
-                                if(sflagForca==1){
-                                    categoryLink = linkJson["href"];
-                                    categoryLink = biaozhunUrl(categoryLink);
-                                    // console.log("categoryLink:",categoryLink);
-                                    break;
-                                }
+                                try{
+                                    await mainPage.bringToFront()
+                                    linkJson=await getLinksForOneCategory(mainPage,level1,level2,level3,level4);
+                                    sflagForca=linkJson["flag"];
+                                    if(sflagForca==1){
+                                        categoryLink = linkJson["href"];
+                                        categoryLink = biaozhunUrl(categoryLink);  // 全局变量
+                                        var categoryName = linkJson["categoryName"]; // 在这个函数中起作用
+                                        // console.log("categoryLink:",categoryLink);
+                                        break;
+                                    }
                                     await mainPage.reload();
                                     await  newPageLoadAfterOperation(mainPage); //关闭促销等页面
+                                }
+                                catch(e)
+                                {
+                                    console.log("重新加载……")
+                                }
+
                             }
                             for(t=pageNumberStart;t<pageNumberEnd;t++){
                                 console.log("再一次进入分类页面:",categoryLink);
-                                await openLinkAndGetInfomation(browser,categoryLink,t);
+                                let oagt=await openLinkAndGetInfomation(browser,categoryLink,t,categoryName);
+                                let flag = oagt["flag"];
+                                if(flag == 9){ //说明要重新启动浏览器
+                                     console.log("开始重新启动浏览器");
+                                     await browser.close();
+                                     return resultT={"flag":9,"info":""}; //说明要重新启动浏览器
+
+                                }
                                 writeHaveReadToFile(level1,level2,level3,level4,t+1)  //记录的是下次需要读取的位置
                             }//end of for
         //                 writeHaveReadToFile(level1,level2,level3,level4+1,1)
@@ -1209,11 +1274,11 @@ async function startWork() {
         //     writeHaveReadToFile(level1+1,1,1,1,1)
         // }
 
-        // await browser.close();
+
 };
 
-function writeHaveReadToFile(i,j,p,q,pageNumber){
-    haveReadToFile = i+"#"+j+"#"+p+"#"+q+"#"+pageNumber;
+function writeHaveReadToFile(i,j,p,q,pageNumberToW){
+    haveReadToFile = i+"#"+j+"#"+p+"#"+q+"#"+pageNumberToW;
     file.writeFileSync('haveRead.txt',haveReadToFile)
 }
 
@@ -1346,6 +1411,23 @@ function isInteger(obj) {
 
     alreadyReadArgs = fs.readFileSync(alreadyReadPath, 'utf8');
 
-    await startWork();
+    let stFlag = 9;
+    while(true){
+        try{
+            let st=await startWork();
+            stFlag = st["flag"];
+            // if(stFlag == 9){ //说明要重新启动浏览器
+            //      console.log("启动浏览器");
+            // }
+
+        }
+        catch(e){
+            console.log("我调试用的");
+            console.log(e);
+        }
+
+    }
+
+
 
 })();

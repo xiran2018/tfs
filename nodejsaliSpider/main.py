@@ -33,6 +33,18 @@ parser.add_argument('-e','--end',required = False,default=-1,type=int, help='结
 parser.add_argument('-f','--file_name', required = True,default='', type=str, help='name of the  file.')
 
 
+def getHaveReadInfo():
+    fname = 'haveRead.txt'
+    with open(fname, 'r', encoding='utf-8') as f:  # 打开文件
+        lines = f.readlines()  # 读取所有行
+        if(lines != "" and len(lines)>0):
+            first_line = lines[0]  # 取第一行
+            # last_line = lines[-1]  # 取最后一行
+            print('文件' + fname + '第一行为：' + first_line)
+            # print('文件' + fname + '最后一行为：' + last_line)
+            return first_line
+        else:
+            return "已读信息"
 def isdigit(aString):
     try:
         x = float(aString)
@@ -123,6 +135,7 @@ def generateExcel(results,excelName):
         table.cell(row=i, column=9, value=row[8])
         table.cell(row=i, column=10, value=row[9])
         table.cell(row=i, column=11, value=row[10])
+        table.cell(row=i, column=12, value=row[11])
 
 
     writeFile("pythonLastRead.txt",str(lastRowNumber))
@@ -151,7 +164,8 @@ def generateExcel(results,excelName):
     # now_time = now_time[:4] + '年' + now_time[4:6] + '月' + now_time[6:8] + '日' + now_time[8:11] + '时' + now_time[11:13] + '分'
     # now_time = now_time[:4] + '年' + now_time[4:6] + '月' + now_time[6:8] + '日'
 
-    excelName="{}-{}.xlsx".format(excelName,now_time)
+    haveRead = getHaveReadInfo();
+    excelName="{}-{}-{}-{}条.xlsx".format(excelName,now_time,haveRead,i)
 
     if(delFile(excelName)):
         wb.save(excelName)

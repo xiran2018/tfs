@@ -138,11 +138,11 @@ async function insert(addSql,addSqlParams) {
 // })();
 
 //异步方式调用
-// var  addSql = 'INSERT INTO companyInfo(storeName,companyName,url) VALUES (?,?,?)';
-// var  addSqlParams = ['菜鸟工具', 'https://c.runoob.com','23453'];
+var  addSql = 'INSERT INTO companyInfo(storeName,companyName,url) VALUES (?,?,?)';
+var  addSqlParams = ['菜鸟工具', 'https://c.runoob.com','23453'];
 // // // INSERT INTO companyInfo(storeName,companyName,url) VALUES('菜鸟工具','https://c.runoob.com','23453'
 // // insert(addSql,addSqlParams)
-// insert(addSql,addSqlParams)
+insert(addSql,addSqlParams)
 
 
 module.exports = {
