@@ -479,21 +479,29 @@ async function getCompanyInfo(browser,mainPageCi,url){
             tryCount++;
             var countlunxun = 3;
             if(tryCount>5){
-                while(lunxun<countlunxun){
-                    up=up+1;
-                    if(up<userAndPassLists.length){ //说明还没有到最后一个账号
-                        console.log("=======================================");
-                        console.log("貌似被屏蔽了，系统会选择另一个账号登录，您也可以终止程序运行");
-                        console.log("=======================================");
+                let reloginJson= "";
+                if(lunxun<countlunxun){
+                    while(lunxun<countlunxun){
+                        up=up+1;
+                        if(up<userAndPassLists.length){ //说明还没有到最后一个账号
+                            console.log("=======================================");
+                            console.log("貌似被屏蔽了，系统会选择另一个账号登录，您也可以终止程序运行");
+                            console.log("=======================================");
+                        }
+                        else
+                        {
+                            up=0;//重新开始
+                            lunxun++;
+                        }
 
+                        reloginJson=await reLogin(true); //账号登录
+                        if(reloginJson["flag"])
+                            break;
 
-                    }
-                    else
-                    {
-                        up=0;//重新开始
-                        lunxun++;
+                    } //end of while
+                }
 
-                        if(lunxun>countlunxun){
+                if(lunxun>=countlunxun  && ( reloginJson=="" || !reloginJson["flag"])){
                             console.log("=======================================");
                             console.log("所有的账号轮训完毕，会等待两个小时，然后重新轮训，您也可以终止程序运行");
                             console.log("=======================================");
@@ -503,18 +511,7 @@ async function getCompanyInfo(browser,mainPageCi,url){
 
                             return 9;  //返回9,表示重重新启动浏览器
 
-                        }
-
-                        // reloginJson=await reLogin(true);
-                    }
-
-                    var reloginJson=await reLogin(true); //账号登录
-                    if(reloginJson["flag"])
-                        break;
-
-                } //end of while
-
-
+                }
 
             }//end of if(tryCount>5)
         } //end of while
