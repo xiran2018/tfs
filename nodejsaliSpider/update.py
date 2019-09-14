@@ -55,7 +55,9 @@ def isdigit(aString):
 
 def getData(start,end):
     # 打开数据库连接
-    db = pymysql.connect("localhost", "root", "123456", "tfs", charset='utf8')
+    # db = pymysql.connect("localhost", "root", "123456", "tfs", charset='utf8')
+
+    db = pymysql.connect(host='13.231.165.68', port=33070, user='root', passwd='880309jQl', db='tfs', charset='utf8')
 
     # 使用cursor()方法获取操作游标
     cursor = db.cursor()
@@ -111,31 +113,52 @@ def generateExcel(results,excelName):
     font = Font(name=u'宋体',size=16, bold = True)
     alignment_style = Alignment(horizontal='center', vertical='center')
 
-    print(type(results))
-    i=0;
-    lastRowNumber=-1;
+    # print(type(results))
+    i=1
+    table.cell(row=i, column=1, value="序号")
+    table.cell(row=i, column=2, value="类别名")
+    table.cell(row=i, column=3, value="公司名称")
+    table.cell(row=i, column=4, value="公司连接")
+    table.cell(row=i, column=5, value="商店名")
+    table.cell(row=i, column=6, value="商店数量")
+    table.cell(row=i, column=7, value="有/无海外仓")
+    table.cell(row=i, column=8, value="城市")
+    table.cell(row=i, column=9, value="所属人员")
+    table.cell(row=i, column=10, value="用户编号")
+    table.cell(row=i, column=11, value="社会信用码")
+    table.cell(row=i, column=12, value="营业执照")
+    table.cell(row=i, column=13, value="注册地址")
+    table.cell(row=i, column=14, value="法人代表")
+    table.cell(row=i, column=15, value="经营范围")
+    table.cell(row=i, column=16, value="注册时间")
+    table.cell(row=i, column=17, value="登记机关")
+    table.cell(row=i, column=18, value="促销次数")
+    table.cell(row=i, column=19, value="备注")
+    table.cell(row=i, column=20, value="营销渠道")
+    table.cell(row=i, column=21, value="店铺链接(|)")
+
+
+    lastRowNumber=-1
     for row in results:
-        # fname = row[0]
-        # lname = row[1]
-        # age = row[2]
-        # sex = row[3]
-        # income = row[4]
-        # 打印结果
-        # print("fname=%s,lname=%s,age=%s,sex=%s,income=%s" % (fname, lname, age, sex, income))
-        i = i + 1;
-        lastRowNumber=row[0];
-        table.cell(row=i, column=1,value =row[0])
-        table.cell(row=i, column=2, value=row[1])
-        table.cell(row=i, column=3, value=row[2])
-        table.cell(row=i, column=4, value=row[3])
-        table.cell(row=i, column=5, value=row[4])
-        table.cell(row=i, column=6, value=row[5])
-        table.cell(row=i, column=7, value=row[6])
-        table.cell(row=i, column=8, value=row[7])
-        table.cell(row=i, column=9, value=row[8])
-        table.cell(row=i, column=10, value=row[9])
-        table.cell(row=i, column=11, value=row[10])
-        table.cell(row=i, column=12, value=row[11])
+        lastRowNumber=row[0]
+        i = i + 1
+        j = 0
+        for ele in row:
+            # print(ele)
+            j = j+1
+            table.cell(row=i, column=j, value=ele)
+            # table.cell(row=i, column=2, value=row[1])
+            # table.cell(row=i, column=3, value=row[2])
+            # table.cell(row=i, column=4, value=row[3])
+            # table.cell(row=i, column=5, value=row[4])
+            # table.cell(row=i, column=6, value=row[5])
+            # table.cell(row=i, column=7, value=row[6])
+            # table.cell(row=i, column=8, value=row[7])
+            # table.cell(row=i, column=9, value=row[8])
+            # table.cell(row=i, column=10, value=row[9])
+            # table.cell(row=i, column=11, value=row[10])
+            # table.cell(row=i, column=12, value=row[11])
+            # table.cell(row=i, column=13, value=row[12])
 
 
     writeFile("pythonLastRead.txt",str(lastRowNumber))
@@ -165,11 +188,12 @@ def generateExcel(results,excelName):
     # now_time = now_time[:4] + '年' + now_time[4:6] + '月' + now_time[6:8] + '日'
 
     haveRead = getHaveReadInfo();
-    excelName="{}-{}-{}-{}条.xlsx".format(excelName,now_time,haveRead,i)
+    tiaoshu = i-1
+    excelName="{}-{}-{}-{}条.xlsx".format(excelName,now_time,haveRead,tiaoshu)
 
     if(delFile(excelName)):
         wb.save(excelName)
-        print("保存文件成功:{}，数据条数:{}".format(excelName,i))
+        print("保存文件成功:{}，数据条数:{}".format(excelName,tiaoshu))
 
 
 def delFile(file):

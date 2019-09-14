@@ -24,7 +24,7 @@ function readFileToArr(fReadName, cb) {
 }
 
 function writeFileSync(path,content){
-    console.log("准备写入文件");
+    // console.log("准备写入文件");
     fs.writeFileSync(path, content,  function(err) {
        if (err) {
            return console.error(err);

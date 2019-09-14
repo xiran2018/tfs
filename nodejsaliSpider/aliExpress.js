@@ -180,51 +180,117 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categ
 
                     for(;ipn<productLinks.length;ipn++){
                         product=productLinks[ipn];
-                        productUrl = biaozhunUrl(product)
-                        console.log("href:",productUrl);
+                        let productUrl = biaozhunUrl(product)
+                        // console.log("href:",productUrl);
                         let storeInfo = await openProductAndGetInfomation(browser,productUrl); //打开商品列表
                         let flag = storeInfo["flag"];
                         let info = storeInfo["info"];
+
                         console.log(storeInfo["info"]);
 
                         if(flag==1 && info.length>2 && info!="" && info !=null && info!=undefined && info !=''){
-                            try{
-                                var  addSqlParams = [];
-                                addSqlParams.push(info[0]["content"]);
-                                addSqlParams.push(categoryName);
-                                addSqlParams.push(info[8]["content"]);
-                                addSqlParams.push(info[1]["content"]);
-                                addSqlParams.push(info[2]["content"]);
-                                addSqlParams.push(info[3]["content"]);
-                                addSqlParams.push(info[4]["content"]);
-                                addSqlParams.push(info[5]["content"]);
-                                addSqlParams.push(info[6]["content"]);
-                                addSqlParams.push(info[7]["content"]);
-                                addSqlParams.push(info[9]["content"]);
-
-                                // url，包含
-                                var  addSql = 'INSERT INTO companyInfo(companyName,categoryName,storeName,shehuixinyongma,yingyezhizhao,registeraddress,daibiaoren,jiyingfanwei,createtime,dengjijiguan,url) VALUES(?,?,?,?,?,?,?,?,?,?,?)';
-
-                                // url，不包含
-                                // var  addSql = 'INSERT INTO companyInfo(companyName,storeName,shehuixinyongma,yingyezhizhao,registeraddress,daibiaoren,jiyingfanwei,createtime,dengjijiguan) VALUES(?,?,?,?,?,?,?,?,?)';
-                                db.insert(addSql,addSqlParams);
+                            let comInfo=await getInfoByCompany(info[0]["content"]); //验证公司是否在数据库中，如果有的话会返回该公司注册的数量
+                            let countindb = comInfo["count"];
+                            let indbFlag = comInfo["flag"];
+                            if(indbFlag){//更新就可以了
+                                let id = comInfo["id"];
+                                let isHaveHaiCang =comInfo["isHaveHaiCang"];
+                                let storeName = comInfo["storeName"];
+                                storeName = storeName +"|#|"+info[8]["content"]; //把这个店铺的名称加上，用|#分割即可
+                                if(isHaveHaiCang == 0 || isHaveHaiCang == null){ //已经存储的是没有海外仓
+                                    isHaveHaiCang=info[10]["content"];
+                                }
+                                let url = comInfo["url"];
+                                url = url+"|"+productUrl;
+                                countindb = countindb + 1;
+                                let modSql = 'UPDATE companyinfo SET storeName=?, countNumber = ?,isHaveHaiCang=?,url = ? WHERE id = ?';
+                                let modSqlParams = [storeName,countindb,isHaveHaiCang, url,id];
+                                console.log("----------------准备更新消息-----------");
+                                let updateflagInDB=0
+                                while(updateflagInDB==0){
+                                    try{
+                                        await db.syncQuery(modSql,modSqlParams);
+                                        console.log("----------------更新消息成功-----------");
+                                        updateflagInDB=1
+                                    }catch (e) {
+                                        console.log(e);
+                                        console.log("--------------更新消息失败,重新更新-----------");
+                                        // process.exit();
+                                    }
+                               }
                             }
-                            catch(e){
-                                console.log("获取商家信息出错，商家url:",product);
+                            else{//需要插入一条
+                                try{
+                                    var  addSqlParams = [];
+                                    addSqlParams.push(info[0]["content"]);
+                                    addSqlParams.push(categoryName);
+                                    addSqlParams.push(info[8]["content"]);
+                                    addSqlParams.push(info[1]["content"]);
+                                    addSqlParams.push(info[2]["content"]);
+                                    addSqlParams.push(info[3]["content"]);
+                                    addSqlParams.push(info[4]["content"]);
+                                    addSqlParams.push(info[5]["content"]);
+                                    addSqlParams.push(info[6]["content"]);
+                                    addSqlParams.push(info[7]["content"]);
+                                    addSqlParams.push(info[9]["content"]);
+                                    addSqlParams.push(countindb);
+                                    addSqlParams.push(info[10]["content"]);
 
-                                console.log("错误详情如下所示(偶尔一次，不用管)：");
-                                console.log(e);
-                                console.log("--------------------(偶尔一次，不用管)-----------");
-                            }
+                                    // url，包含
+                                    var  addSql = 'INSERT INTO companyinfo(companyName,categoryName,storeName,shehuixinyongma,yingyezhizhao,registeraddress,daibiaoren,jiyingfanwei,createtime,dengjijiguan,url,countNumber,isHaveHaiCang) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)';
 
+
+                                    let insertflag=0
+                                    while(insertflag==0){
+                                        try{
+                                            await db.syncQuery(addSql,addSqlParams);
+                                            // await db.insert(addSql,addSqlParams);
+                                            console.log("----------------插入消息成功-----------");
+                                            insertflag=1
+                                        }catch (e) {
+                                            console.log(e);
+                                            console.log("--------------插入消息失败,重新插入-----------");
+                                            // process.exit();
+                                        }
+                                   }
+                                }
+                                catch(e){
+                                    console.log("获取商家信息出错，商家url:",product);
+
+                                    console.log("错误详情如下所示(偶尔一次，不用管)：");
+                                    console.log(e);
+                                    console.log("--------------------(偶尔一次，不用管)-----------");
+                                }
+                            } //end of else
                         }//end of if
                         else if(flag == 9){ //说明要重新启动浏览器
                              console.log("需要重新启动浏览器");
                              return {"flag":9,"info":""}; //说明要重新启动浏览器
                         }
                         else if(flag==0){
-                            console.log("数据库已经该店家信息了，只是记录位置就可以了^^^^^");
-                        }
+                            console.log("数据库已经该店家信息了，更新海外仓信息就可以了^^^^^");
+                            let isHaiFlag = storeInfo["isHaiFlag"]; //新打开的页面是否有海外仓
+                            let haiCangIndb = storeInfo["haiCangIndb"]; //数据库中是否海外仓
+                            let id = storeInfo["id"]; //数据库中该条目的id
+                            if(haiCangIndb==0 && isHaiFlag==1){
+                                //说明页面有海外仓信息，但是数据库里面没有，所以需要更新数据库
+                                let modSql = 'UPDATE companyinfo SET isHaveHaiCang=? WHERE id = ?';
+                                let modSqlParams = [isHaveHaiCang, id];
+                                console.log("----------准备更新海外仓id=",id);
+                                let updateflag=0
+                                while(updateflag==0){
+                                   try{
+                                        await db.syncQuery(modSql,modSqlParams);
+                                        console.log("----------------更新消息成功-----------");
+                                        updateflag = 1;
+                                    }catch (e) {
+                                        // console.log(e);
+                                        console.log("--------------更新消息失败，重新更新-----------");
+                                    }
+                                }
+
+                            }//END of if
+                        }//END OF ELSE IF
                         else if(flag==1 &&(info=="" || info==null || info==undefined  || info =='')){
                             console.log("该店家还没有上传信息<:<:<:<:<:<:<:<:<:");
                         }
@@ -232,7 +298,7 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categ
                             console.log("该店家还没有上传信息<:<:<:<:<:<:<:<:<:");
                         }
 
-
+                        console.log("处理完了一个链接，写入文件");
 
                         changeHaveReadFile(pageNumber,ipn+1);
 
@@ -245,7 +311,7 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categ
                  }
                  finally {
                     if(pageOfCategory!=null && pageOfCategory!="" && pageOfCategory!=undefined )
-                        pageOfCategory.close();
+                       await pageOfCategory.close();
                 }
             } //end of while
 
@@ -269,38 +335,162 @@ function  changeHaveReadFile(pageNumber,productNumberInCtory){
 
 }
 
-async function checkIsInDb(stroeName){
-
-    var  sql = 'SELECT * FROM companyInfo where storeName=?';
+async function getInfoByCompany(companyName){
+    var  sql = 'SELECT * FROM companyinfo where companyName=?';
     var  addSqlParams = [];
-    addSqlParams.push(stroeName);
-    var  result =await db.syncQuery(sql,addSqlParams)
+    addSqlParams.push(companyName);
+    console.log("开始根据公司名称查找：",companyName);
+    let flag=0
+    while(flag==0){
+        try{
+            var  result =await db.syncQuery(sql,addSqlParams)
+            // console.log('--------------------------result----------------------------');
+            // console.log(result.length);
+            flag=1;
+        }
+        catch (e) {
+            console.log(e);
+            console.log("从数据库中查找是否有这个公司出错,重新查找");
+        }
+    }
+
     // console.log('--------------------------result----------------------------');
     // console.log(result.length);
+    if(result.length>0){
+        let deleteResult = await deleteInfo(result); //删除多余的公司信息
+        let count = result[0].countNumber;
+        let url= result[0].url;
+        let isHaveHai = result[0].isHaveHaiCang;
+        if(deleteResult["flag"]){
+            count = count + deleteResult["count"];
+            url = url +"|"+ deleteResult["url"];
+            if(isHaveHai == 0)
+                isHaveHai = deleteResult["isHaiCang"];
+        }
+        return {"flag":true,"count":count,"storeName":result[0].storeName,"isHaveHaiCang":isHaveHai,"id":result[0].id,"url":url};
+
+    }
+    else{
+         return {"flag":false,"count":1};
+    }
+
+}
+
+//删除url并且返回店铺数量和url信息
+async function deleteInfo(result){
+    var count=0;
+    var url="";
+    var isHaiCang=0;
+    if(result.length>1){ //如果多于1个才删除
+        for(let i =1;i<result.length;i++){ //从第一个开始删除，第0个需要更新消息
+            if(isHaiCang==0) //只要是1就不用管，说明这个公司有海外仓
+                isHaiCang = result[i].isHaveHaiCang;
+            count=count+result[i].countNumber;
+            if(url=="")
+                url=result[i].url;
+            else
+                url=url+"|"+result[i].url;
+            //删除这个条目 DELETE FROM websites where id=6
+            let id= result[i].id;
+            let modSql = 'DELETE FROM  companyinfo WHERE id = ?';
+            let modSqlParams = [id];
+            console.log("---------------准备删除信息--------------");
+            let flag=0
+            while(flag==0){
+                try{
+                    let excuteResult = await db.syncQuery(modSql,modSqlParams);
+
+                    console.log("----------------删除消息成功-----------");
+                    flag=1;
+                }catch (e) {
+                    // console.log(e);
+                    console.log("--------------删除消息失败，重新删除一次----------");
+                    flag=0;
+                }
+
+            }
+        }//end of for
+        return {"flag":true,"count":count,"url":url,"isHaiCang":isHaiCang};
+    }
+    else{
+        return {"flag":false,"count":count,"url":url};
+    }
+}
+
+async function checkIsInDb(stroeName){
+    var agrs = "%"+stroeName+"%";
+    var  sql = 'SELECT * FROM companyinfo where storeName like ?';
+    var  addSqlParams = [];
+    addSqlParams.push(agrs);
+    let flag=0
+    while(flag==0){
+        try{
+            console.log("从数据库中查找是否有这个店铺名称");
+            var  result =await db.syncQuery(sql,addSqlParams)
+            flag=1;
+            // console.log('--------------------------result----------------------------');
+            // console.log(result.length);
+        }
+        catch (e) {
+            console.log(e);
+            console.log("从数据库中查找是否有这个店铺名称出错");
+        }
+    }
+
+
     if(result.length>0)
-        return true;
+        return {"flag":true,"id":result[0].id,"haiCang":result[0].isHaveHaiCang};
     else
-        return false;
+        return {"flag":false};
 
 }
 //打开具体的商品页面，准确进入商家信息
 async function openProductAndGetInfomation(browser,productUrl){
-    successFlag=0; //初始化，没有成功获取数据
+    var successFlag=0; //初始化，没有成功获取数据
+    var resultT;
+    var successFlag;
     while(true){
         try {
-            pageProduct = await loadPage(browser, productUrl);
+            var pageProduct = await loadPage(browser, productUrl);
 
             await newPageLoadAfterOperation(pageProduct); //登录成功之后，关闭促销等页面
 
-            console.log("开始等待20秒，请不要着急……");
-            await pageProduct.waitFor(20000);//等待20秒
+            console.log("开始等待5秒，请不要着急……");
+            await pageProduct.waitFor(5000);//等待10秒
 
             //首先获取店铺名称，看看是不是已经有了此信息，如果有了就不再获取店铺信息了
-            stroeNameCss = '#store-info-wrap  .store-container .store-name a';
-            stroeName = await pageProduct.$eval(stroeNameCss, node => node.textContent);
-            haveIndbFlag= await  checkIsInDb(stroeName);
-            if(!haveIndbFlag){
+            var stroeNameCss = '#store-info-wrap  .store-container .store-name a';
+            var stroeName = await pageProduct.$eval(stroeNameCss, node => node.textContent);
+            let haveIndb= await  checkIsInDb(stroeName);
 
+            let haveIndbFlag=haveIndb["flag"];
+
+
+            /////////////////////////海外仓验证功能
+            var isHaiFlag=0;
+            //查看是否开通海外仓了
+            try{
+                let isHai = ".sku-property .sku-property-list .sku-property-item .sku-property-text span";
+
+                await pageProduct.waitFor(isHai);
+
+                let isHaiList = await pageProduct.$$eval(isHai,el => el.map(x => x.textContent));
+
+                console.log("++++++++++++isHaiList:",isHaiList);
+                for(let ih=0;ih<isHaiList.length;ih++){
+                    let country = isHaiList[ih];
+                    if(country.indexOf("Russian Federation")>=0){
+                        console.log("店铺有海外仓^^^^^^^^^^^^^^^^^ohohohoho");
+                        isHaiFlag = 1;
+                    }
+
+                }
+            }
+            catch (e) {
+                    console.log("没有等到页面元素出现，店铺没有海外仓");
+            }
+
+            if(!haveIndbFlag){
                  //鼠标移到商品页面
                 busInfoWrap = '#store-info-wrap  .store-container .store-name';
                 rect = await getRectForEle(pageProduct, busInfoWrap);
@@ -314,27 +504,31 @@ async function openProductAndGetInfomation(browser,productUrl){
 
 
                 //鼠标移到店家页面
-                storeInfo = ".header-store-balloon .store-summary .store-business-info a";
+                var storeInfo = ".header-store-balloon .store-summary .store-business-info a";
 
                 await pageProduct.waitFor(storeInfo);
 
-                credUrl = await pageProduct.$eval(storeInfo, node => node.getAttribute('href'));
+                var credUrl = await pageProduct.$eval(storeInfo, node => node.getAttribute('href'));
 
 
 
                 credUrl = biaozhunUrl(credUrl);
 
-                content=await getCompanyInfo(browser, pageProduct, credUrl); //拿到了公司信用凭证url，然后准备打开，获取信息
+                var content=await getCompanyInfo(browser, pageProduct, credUrl); //拿到了公司信用凭证url，然后准备打开，获取信息
 
                 if(content==9){
                     resultT={"flag":9,"info":content}; //说明要重新启动浏览器
                 }
                 else
                 {
-                    temp={"content":stroeName}
+                    let temp={"content":stroeName}
                     content.push(temp)
 
                     temp={"content":productUrl}
+                    content.push(temp)
+
+
+                    temp={"content":isHaiFlag}
                     content.push(temp)
 
                     resultT={"flag":1,"info":content}
@@ -343,14 +537,16 @@ async function openProductAndGetInfomation(browser,productUrl){
 
                 // return resultT;
                 // console.log(content);
-            }
-            else{
-                resultT={"flag":0,"info":""}
+            }//end of if
+            else{ //end of else
+                let id=haveIndb["id"];
+                let haiCangIndb=haveIndb["haiCang"];
+                resultT={"flag":0,"info":"","isHaiFlag":isHaiFlag,"id":id,"haiCangIndb":haiCangIndb} //在数据库中了
                 // return resultT;
             }
 
             successFlag=1; //成功了
-        }
+        }//end of try
         catch(e) {
                 // console.log(e);
                 console.log("打开具体的商品页面时出错");
@@ -359,7 +555,7 @@ async function openProductAndGetInfomation(browser,productUrl){
                 // console.log("ohhohohohohoho");
                 if(pageProduct!=null && pageProduct!="" && pageProduct!=undefined ){//关闭商品页面
                     console.log("关闭商品页面");
-                    pageProduct.close();
+                    await pageProduct.close();
                 }
                 if(successFlag===1)
                     break;
@@ -677,7 +873,7 @@ async function getInformation(browser,mainPageForPu,url){
                 await mainPageToInfo.waitFor(5000);//等待20秒
 
                 if(mainPageToInfo.url().indexOf("login") > 0){ //说明没有登录，需要登录
-                    mainPageToInfo.close();
+                    await mainPageToInfo.close();
                     return {"flag":0,"page":mainPageToInfo};//没有登录
                 }
                 // 等待滑块出现
@@ -686,7 +882,7 @@ async function getInformation(browser,mainPageForPu,url){
             }catch(e) {
                 // console.log(e);
                 if(mainPageToInfo!=null && mainPageToInfo!="" && mainPageToInfo!=undefined )
-                    mainPageToInfo.close();
+                    await mainPageToInfo.close();
                 console.log('222: I am in while and i catch a exception');
                 await Ut.sleep(2000); //等待2s
             }
@@ -732,7 +928,7 @@ async function getInformation(browser,mainPageForPu,url){
             }
             finally {
                     if(pageInfunc!=null && pageInfunc!="" && pageInfunc!=undefined ){
-                            pageInfunc.close();
+                            await pageInfunc.close();
                     }
             }
 
@@ -740,7 +936,7 @@ async function getInformation(browser,mainPageForPu,url){
         else { //没有滑动滑块，关闭页面即可
                 if(mainPageToInfo!=null && mainPageToInfo!="" && mainPageToInfo!=undefined )
                 {
-                    mainPageToInfo.close();
+                    await mainPageToInfo.close();
                 }
 
         }
@@ -873,7 +1069,7 @@ async function loadPage(browser,url){
             console.log('1111: I  catch a exception when loading new page');
             await Ut.sleep(2000); //等待2s
             if(page!=null && page != '' && page!=undefined){
-                page.close();
+                await page.close();
             }
 
         }
@@ -943,7 +1139,7 @@ async function login(browsr,url,userName,pass,useOtherAccoountFlag){
             }catch(e) {
                 // console.log(e);
                 if(page!=null && page!="" && page!=undefined )
-                    page.close();
+                    await page.close();
                 console.log('222: I am in while and i catch a exception');
             }
         }
@@ -1074,7 +1270,7 @@ async function login(browsr,url,userName,pass,useOtherAccoountFlag){
 
                 finally{
                     if(!loginFlag){
-                        page.close();
+                        await page.close();
                         console.log('账户和密码可能不对，重新输入');
                      }//end of if
                 }

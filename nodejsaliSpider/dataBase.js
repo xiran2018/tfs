@@ -2,22 +2,26 @@ var mysql      = require('mysql');
 
 let Ut = require("./sleep");
 
-var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'root',
-  password : '123456',
-  database : 'tfs'
-});
+// var connection = mysql.createConnection({
+//   host     : 'localhost',
+//   user     : 'root',
+//   password : '123456',
+//   database : 'tfs'
+// });
 
+var connection;
 
 
 function getConnect(){
     return new Promise(( resolve, reject ) => {
 
         connection = mysql.createConnection({
-          host     : 'localhost',
+          // host     : 'localhost',
+          host : '13.231.165.68',
           user     : 'root',
-          password : '123456',
+          // password : '123456',
+          password : '880309jQl',
+            port:'33070',
           database : 'tfs'
         });
 
@@ -67,12 +71,21 @@ let syncQuery = async function( sql, values ) {
           connection.query(sql, values, ( err, rows) => {
               if ( err ) {
                 // reject( err )
-                reject(-1) //错误提示，需要用try catch 捕获异常
+                // console.log(err)
+                // reject(-1) //错误提示，需要用try catch 捕获异常
+                  reject({"flag":-1,"err":err})
               } else {
                 resolve( rows )
               }
               // 结束会话
-          connection.end();
+              try{
+                  connection.end();
+              }
+              catch (e) {
+                  console.log(e);
+                  console.log("出错了");
+              }
+
         }); //end of query
 
   })//end of promise
@@ -127,22 +140,58 @@ async function insert(addSql,addSqlParams) {
     connection.end();
 }
 
-// (async () => {
-// //     // 同步方式调用
+async function getInfoByCompany(companyName){
+    var  sql = 'SELECT * FROM companyInfo where companyName=?';
+    var  addSqlParams = [];
+    addSqlParams.push(companyName);
+    var  result =await syncQuery(sql,addSqlParams)
+    // console.log('--------------------------result----------------------------');
+    console.log(result.length);
+    if(result.length>0)
+        return {"flag":true,"count":result[0].countNumber,"id":result[0].id,"url":result[0].url};
+    else
+        return {"flag":false,"count":1};
+}
+
+(async () => {
+//     // 同步方式调用
 //     var  sql = 'SELECT * FROM companyInfo where storeName=?';
 //     // var  sql = 'SELECT * FROM companyInfo where storeName="Dressing Trends Store"';
 //     var  addSqlParams = ['Dressing Trends Store'];
-//     var  result =await syncQuery(sql,addSqlParams)
+//     var  result =await syncQuery(sql,addSqlParams);
+//     var  result =await getInfoByCompany("厦门喜百斯电子商务有限公司")
 //     console.log('--------------------------result----------------------------');
-//     console.log(result.length);
-// })();
+//     console.log(result);
+
+    ///////////////////////////测试更新/////////
+    // let comInfo=await getInfoByCompany("杭州好易仓电子商务有限公司"); //验证公司是否在数据库中，如果有的话会返回该公司注册的数量
+    // let countindb = comInfo["count"];
+    // let indbFlag = comInfo["flag"];
+    // if(indbFlag) {//更新就可以了
+    //     let id = comInfo["id"];
+    //     let url = comInfo["url"];
+    //     url = url + "|" + "www.baidu.com";
+    //     countindb = countindb + 1;
+    //     let modSql = 'UPDATE companyinfo SET countNumber = ?,url = ? WHERE id = ?';
+    //     let modSqlParams = [countindb, url, id];
+    //     console.log("----------------准备更新消息-----------");
+    //     try {
+    //         await syncQuery(modSql, modSqlParams);
+    //         console.log("----------------更新消息成功-----------");
+    //     } catch (e) {
+    //         console.log(e);
+    //         console.log("--------------更新消息失败------(偶尔一次，不用管)-----------");
+    //         process.exit();
+    //     }
+    // }
+})();
 
 //异步方式调用
-var  addSql = 'INSERT INTO companyInfo(storeName,companyName,url) VALUES (?,?,?)';
-var  addSqlParams = ['菜鸟工具', 'https://c.runoob.com','23453'];
+// var  addSql = 'INSERT INTO companyInfo(storeName,companyName,url) VALUES (?,?,?)';
+// var  addSqlParams = ['菜鸟工具', 'https://c.runoob.com','23453'];
 // // // INSERT INTO companyInfo(storeName,companyName,url) VALUES('菜鸟工具','https://c.runoob.com','23453'
 // // insert(addSql,addSqlParams)
-insert(addSql,addSqlParams)
+// insert(addSql,addSqlParams)
 
 
 module.exports = {

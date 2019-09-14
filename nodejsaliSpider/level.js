@@ -3,15 +3,15 @@ userPassLists=[];
 userPassLists.push({'username':'844577594@qq.com','pwd':'jiahaijun005'});
 userPassLists.push({'username':'yunzhongzhizi_2007@126.com','pwd':'19880202Q'});
 userPassLists.push({'username':'1365986138@qq.com','pwd':'jhy469411'});
+userPassLists.push({'username':'905964879@qq.com','pwd':'jiahaiping003'});
 
 
 
 
-
-level1 = 4;
+level1 = 10;
 level2 = 1;
 level3 = 2;
-level4 = 6;
+level4 = 3;
 
 
 module.exports = {
