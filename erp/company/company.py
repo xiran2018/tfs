@@ -1,9 +1,12 @@
 from flask import Blueprint, render_template, jsonify,redirect, request
+from flask import send_from_directory
 
 import sys
 sys.path.append("..")
 from db import db
 from .models.companyInfo import *
+from .export import export
+from .update import update
 
 import json
 
@@ -98,6 +101,42 @@ def getComById():
     cis = CompanyInfoScheme()
     result = cis.dump(cif)
     return jsonify(result)
+
+@company.route('/export',methods=['GET','POST'])
+def exportCompany():
+    start = request.args.get("s",default=-1)
+    end = request.args.get("e",default=-1)
+    start = int(start)
+    end = int(end)
+    resultExport = export(start,end)  # 返回结果{"flag": True, "tips": "没有从数据库中获取数据，可能行号过大","path":""}
+    target_path = ""
+    if(resultExport["flag"]):
+        return send_from_directory(target_path, resultExport["path"], as_attachment=True)
+    else:
+        return jsonify(resultExport)
+    # return jsonify(result)
+
+@company.route('/update',methods=['GET','POST'])
+def updateCompany():
+    start = request.args.get("s", default=-1)
+    print("==================start==={}".format(start))
+    end = request.args.get("e", default=-1)
+    print("==================end==={}".format(end))
+    start = int(start)
+    end = int(end)
+    filePath = request.args.get("f",default="")
+    print("==================filePath==={}".format(filePath))
+    if(filePath==""):
+        return {"flag": False, "tips": "缺少文件名称选项"}
+    elif(filePath.find(".")==-1):
+        filePath=filePath+".xlsx"
+    sheetName = request.args.get("sheet",default="")
+    if sheetName=="":
+        sheetName = "Sheet1"
+    result = update(filePath,sheetName,start,end)  # 返回结果{"flag": True, "tips": "更新数据成功","count":""}
+
+    return jsonify(result)
+    # return jsonify(result)
 
 @company.route('/testById',methods=['GET','POST'])
 def testById():

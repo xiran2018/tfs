@@ -19,20 +19,22 @@ class TelAndMailInfo(db.Model):
     # companyinfo = db.relationship('CompanyInfo', backref=db.backref('TelAndMailInfos'))
     # ！！！ 不在这里设置了，因为在一对多关系中的一的一方设置了
 
-    type = db.Column(db.SmallInteger)
+    type = db.Column(db.SmallInteger) #1: 手机  2：电话  3：qq 4: 邮箱
     value = db.Column(db.String)
+    status = db.Column(db.SmallInteger) # 0 无用，1，有用
+    beizhu = db.Column(db.String)
     createtime  = db.Column(db.DateTime)
     updatetime = db.Column(db.DateTime)
 
 
-    # def __init__(self, categoryName, companyName, storeName, countNumber,shehuixinyongma, yingyezhizhao, registeraddress, daibiaoren, jiyingfanwei,createtime,dengjijiguan,url):
-    #     self.categoryName = categoryName
-    #     self.companyName = companyName
-    #     self.storeName = storeName
-    #     self.countNumber = countNumber
-    #     self.shehuixinyongma = shehuixinyongma
-    #     self.yingyezhizhao = yingyezhizhao
-    #     self.registeraddress = registeraddress
+    def __init__(self, companyid, type, value, status,beizhu, createtime, updatetime):
+        self.companyid = companyid
+        self.type = type
+        self.value = value
+        self.status = status
+        self.beizhu = beizhu
+        self.createtime = createtime
+        self.updatetime = updatetime
     #     self.daibiaoren = daibiaoren
     #     self.jiyingfanwei = jiyingfanwei
     #     self.createtime = createtime
@@ -51,7 +53,9 @@ class TelAndMailInfoScheme(Schema):
     #
     # collaborators = fields.Nested(UserSchema, many=True)
 
-    type = fields.Str()
+    type = fields.Int()
     value = fields.Str()
+    status = fields.Int()  # 0 无用，1，有用
+    beizhu = fields.Str()
     createtime  = fields.Str()
     updatetime = fields.Str()

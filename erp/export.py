@@ -9,6 +9,7 @@ from datetime import timedelta
 from admin.admin import admin
 from user.user import user
 from company.company import company
+from company.export import *
 
 # app=Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -40,8 +41,18 @@ app.register_blueprint(admin,url_prefix='/admin')
 app.register_blueprint(user, url_prefix='/user')
 app.register_blueprint(company, url_prefix='/p')
 
-
+def exportCompany():
+    start = 10362
+    end = 10363
+    resultExport = export(start,end)  # 返回结果{"flag": True, "tips": "没有从数据库中获取数据，可能行号过大","path":""}
+    # target_path = ""
+    # if(resultExport["flag"]):
+    #     return send_from_directory(target_path, resultExport["path"], as_attachment=True)
+    # else:
+    #     return jsonify(resultExport)
+    print(resultExport)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    # app.run(host='0.0.0.0', port=80, debug=True)
+    exportCompany()

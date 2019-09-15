@@ -2,6 +2,8 @@ import sys
 sys.path.append("../..")
 from user.models.userInfo import *
 from .telAndMail import *
+from .jiyingStatus import *
+from .qiyeType import *
 from db import db
 from datetime import datetime
 from marshmallow import Schema, fields, pprint
@@ -31,6 +33,19 @@ class CompanyInfo(db.Model):
 
     isHaveHaiCang = db.Column(db.SMALLINT)
 
+    jingyingstatus = db.Column(db.Integer,db.ForeignKey('jystatus.id')) #外键
+    jystatus = db.relationship('JingYingInfo', backref=db.backref('jyCompanys'))
+
+    zhuceziben = db.Column(db.Float)
+    shengfen =  db.Column(db.String)
+    nashuishibie = db.Column(db.String)
+    zuzhijigouma = db.Column(db.String)
+    canbaorenshu = db.Column(db.Float)
+    qiyeleixing = db.Column(db.Integer,db.ForeignKey('qiyetype.id')) #外键
+    qylx = db.relationship('QiYeTyleInfo', backref=db.backref('qytCompanys'))
+
+    suoshuhangye = db.Column(db.String)
+
     city =  db.Column(db.String)
 
     shehuixinyongma = db.Column(db.String)
@@ -44,13 +59,34 @@ class CompanyInfo(db.Model):
     cuxiaocount =  db.Column(db.Integer)
     beizhu = db.Column(db.String)
     qyqudao = db.Column(db.String)
+    datafrom = db.Column(db.String)
+    updatetime = db.Column(db.DateTime)
+    # cuxiaocount, belongTo, customBianHao, qyqudao, beizhu, countNumber, isHaveHaiCang, categoryName, companyName, \
+    # storeName, url, companyLink, jingyingstatus, daibiaoren, zhuceziben, createtime, shengfen, city, shehuixinyongma, \
+    # nashuishibie, yingyezhizhao, zuzhijigouma, canbaorenshu, qiyeleixing, suoshuhangye, registeraddress, jiyingfanwei, dengjijiguan
 
-    def __init__(self, categoryName, companyName, storeName, countNumber,shehuixinyongma, yingyezhizhao, registeraddress, daibiaoren, jiyingfanwei,createtime,dengjijiguan,url):
+    def __init__(self, cuxiaocount,belongTo,customBianHao,qyqudao,beizhu,countNumber,isHaveHaiCang,categoryName,companyName, \
+                 storeName,url,companyLink,jingyingstatus,daibiaoren,zhuceziben,createtime,shengfen,city,shehuixinyongma, \
+                 nashuishibie,yingyezhizhao,zuzhijigouma,canbaorenshu,qiyeleixing,suoshuhangye,registeraddress,jiyingfanwei,\
+                 dengjijiguan,datafrom,updatetime):
         self.categoryName = categoryName
         self.companyName = companyName
+        self.companyLink = companyLink
         self.storeName = storeName
         self.countNumber = countNumber
-        self.shehuixinyongma = shehuixinyongma
+        self.customBianHao=customBianHao
+        self.belongTo = belongTo
+        self.isHaveHaiCang =  isHaveHaiCang
+        self.jingyingstatus =  jingyingstatus
+        self.zhuceziben =  zhuceziben
+        self.shengfen  = shengfen
+        self.nashuishibie  = nashuishibie
+        self.zuzhijigouma  = zuzhijigouma
+        self.canbaorenshu  = canbaorenshu
+        self.qiyeleixing  = qiyeleixing
+        self.suoshuhangyev =  suoshuhangye
+        self.city  = city
+        self.shehuixinyongma  = shehuixinyongma
         self.yingyezhizhao = yingyezhizhao
         self.registeraddress = registeraddress
         self.daibiaoren = daibiaoren
@@ -58,7 +94,11 @@ class CompanyInfo(db.Model):
         self.createtime = createtime
         self.dengjijiguan = dengjijiguan
         self.url = url
-        # self.release_time = release_time if release_time else datetime.now()
+        self.cuxiaocount=cuxiaocount
+        self.beizhu=beizhu
+        self.qyqudao=qyqudao
+        self.datafrom = datafrom
+        self.updatetime = updatetime
 
     # def __repr__(self):
     #     return '<员工{},{},{},{}>'.format(self.id, self.categoryName, self.companyName, self.storeName)
@@ -81,6 +121,19 @@ class CompanyInfoScheme(Schema):
     TelAndMailInfos = fields.Nested(TelAndMailInfoScheme, many=True)
 
     isHaveHaiCang = fields.Int()
+
+    jystatus = fields.Nested(JingYingInfoScheme)
+
+    zhuceziben = fields.Float()
+    shengfen = fields.Str()
+    nashuishibie = fields.Str()
+    zuzhijigouma = fields.Str()
+    canbaorenshu = fields.Float()
+
+    qylx = fields.Nested(QiYeTyleInfoScheme)
+
+    suoshuhangye = fields.Str()
+
     city = fields.Str()
     shehuixinyongma = fields.Str()
     yingyezhizhao = fields.Str()
@@ -93,3 +146,5 @@ class CompanyInfoScheme(Schema):
     cuxiaocount =  fields.Int()
     beizhu =  fields.Str()
     qyqudao = fields.Str()
+    datafrom = fields.Str()
+    updatetime =  fields.DateTime()

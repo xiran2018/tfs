@@ -51,4 +51,18 @@ def add():
 if __name__ == '__main__':
     # app.run()
     # app.run(debug=True)
-    app.run(host='0.0.0.0', port=80, debug=True)
+    # app.run(host='0.0.0.0', port=80, debug=True)
+
+    # a= "0755-33048316#0|微信; 18138426123; 15813702599; 0755-8935819"
+
+
+    # try:
+    #     a = "0755-8935819"
+    #     b = a.split("; ")
+    #     if (a != ""):
+    #         print(b)
+    # except Exception as e:
+    #     print(e)
+
+    for i in range(1,1):
+        print(i)

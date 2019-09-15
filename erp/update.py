@@ -9,6 +9,8 @@ from datetime import timedelta
 from admin.admin import admin
 from user.user import user
 from company.company import company
+from company.export import *
+from company.update import *
 
 # app=Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -40,8 +42,38 @@ app.register_blueprint(admin,url_prefix='/admin')
 app.register_blueprint(user, url_prefix='/user')
 app.register_blueprint(company, url_prefix='/p')
 
+def exportCompany():
+    start = 10362
+    end = 10363
+    resultExport = export(start,end)  # 返回结果{"flag": True, "tips": "没有从数据库中获取数据，可能行号过大","path":""}
+    # target_path = ""
+    # if(resultExport["flag"]):
+    #     return send_from_directory(target_path, resultExport["path"], as_attachment=True)
+    # else:
+    #     return jsonify(resultExport)
+    print(resultExport)
 
+def updateCompany():
+    start =2
+    print("==================start==={}".format(start))
+    end =100
+    print("==================end==={}".format(end))
+    filePath = "共99个"
+    print("==================filePath==={}".format(filePath))
+    if(filePath==""):
+        print({"flag": False, "tips": "缺少文件名称选项"})
+        return
+    elif(filePath.find(".")==-1):
+        filePath=filePath+".xlsx"
+    sheetName = ""
+    if sheetName=="":
+        sheetName = "Sheet1"
+    result = update(filePath,sheetName,start,end)  # 返回结果{"flag": True, "tips": "更新数据成功","count":""}
+
+    return result
+    # return jsonify(result)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    # app.run(host='0.0.0.0', port=80, debug=True)
+    updateCompany()
