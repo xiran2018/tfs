@@ -16,12 +16,12 @@ function getConnect(){
     return new Promise(( resolve, reject ) => {
 
         connection = mysql.createConnection({
-          // host     : 'localhost',
+           // host     : 'localhost',
           host : '13.231.165.68',
           user     : 'root',
-          // password : '123456',
+           // password : '123456',
           password : '880309jQl',
-            port:'33070',
+          port:'33070',
           database : 'tfs'
         });
 
@@ -186,11 +186,21 @@ async function getInfoByCompany(companyName){
     // }
 })();
 
+var date = new Date();
+var year = date.getFullYear();
+var month = date.getMonth()+1;
+var day = date.getDate();
+var hour = date.getHours();
+var minute = date.getMinutes();
+var second = date.getSeconds();
+var date=year+'-'+month+'-'+day+' '+hour+':'+minute+':'+second;
+// console.log(year+''+month+''+day+''+hour+''+minute+''+second);
+
 //异步方式调用
-// var  addSql = 'INSERT INTO companyInfo(storeName,companyName,url) VALUES (?,?,?)';
-// var  addSqlParams = ['菜鸟工具', 'https://c.runoob.com','23453'];
-// // // INSERT INTO companyInfo(storeName,companyName,url) VALUES('菜鸟工具','https://c.runoob.com','23453'
-// // insert(addSql,addSqlParams)
+// var  addSql = 'INSERT INTO companyInfo(storeName,companyName,url,updatetime) VALUES (?,?,?,?)';
+// var  addSqlParams = ['菜鸟工具', 'https://c.runoob.com','23453',date];
+// // // // INSERT INTO companyInfo(storeName,companyName,url) VALUES('菜鸟工具','https://c.runoob.com','23453'
+// // // insert(addSql,addSqlParams)
 // insert(addSql,addSqlParams)
 
 

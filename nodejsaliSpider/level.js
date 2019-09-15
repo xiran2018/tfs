@@ -11,7 +11,7 @@ userPassLists.push({'username':'905964879@qq.com','pwd':'jiahaiping003'});
 level1 = 10;
 level2 = 1;
 level3 = 2;
-level4 = 3;
+level4 = 5;
 
 
 module.exports = {

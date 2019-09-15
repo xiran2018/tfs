@@ -94,6 +94,18 @@ function  biaozhunUrl(linkArgs){
             return bzurl;
 }
 
+function getDateTime(){
+    var date = new Date();
+    var year = date.getFullYear();
+    var month = date.getMonth()+1;
+    var day = date.getDate();
+    var hour = date.getHours();
+    var minute = date.getMinutes();
+    var second = date.getSeconds();
+    var nowTime=year+'-'+month+'-'+day+' '+hour+':'+minute+':'+second;
+    return nowTime;
+}
+
 //打开分类列表，并且跳转到指定的页面
 async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categoryName){
 
@@ -177,7 +189,7 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categ
 
                     console.log("ipn:",ipn);
                     console.log("productLinks.length:",productLinks.length);
-
+                    let nowtime = getDateTime();
                     for(;ipn<productLinks.length;ipn++){
                         product=productLinks[ipn];
                         let productUrl = biaozhunUrl(product)
@@ -203,8 +215,9 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categ
                                 let url = comInfo["url"];
                                 url = url+"|"+productUrl;
                                 countindb = countindb + 1;
-                                let modSql = 'UPDATE companyinfo SET storeName=?, countNumber = ?,isHaveHaiCang=?,url = ? WHERE id = ?';
-                                let modSqlParams = [storeName,countindb,isHaveHaiCang, url,id];
+
+                                let modSql = 'UPDATE companyinfo SET storeName=?, countNumber = ?,isHaveHaiCang=?,url = ?,updatetime = ? WHERE id = ?';
+                                let modSqlParams = [storeName,countindb,isHaveHaiCang, url,nowtime,id];
                                 console.log("----------------准备更新消息-----------");
                                 let updateflagInDB=0
                                 while(updateflagInDB==0){
@@ -235,9 +248,11 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categ
                                     addSqlParams.push(info[9]["content"]);
                                     addSqlParams.push(countindb);
                                     addSqlParams.push(info[10]["content"]);
+                                    addSqlParams.push("速卖通");
+                                    addSqlParams.push(nowtime);
 
                                     // url，包含
-                                    var  addSql = 'INSERT INTO companyinfo(companyName,categoryName,storeName,shehuixinyongma,yingyezhizhao,registeraddress,daibiaoren,jiyingfanwei,createtime,dengjijiguan,url,countNumber,isHaveHaiCang) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)';
+                                    var  addSql = 'INSERT INTO companyinfo(companyName,categoryName,storeName,shehuixinyongma,yingyezhizhao,registeraddress,daibiaoren,jiyingfanwei,createtime,dengjijiguan,url,countNumber,isHaveHaiCang,datafrom,updatetime) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 
 
                                     let insertflag=0
@@ -274,8 +289,8 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categ
                             let id = storeInfo["id"]; //数据库中该条目的id
                             if(haiCangIndb==0 && isHaiFlag==1){
                                 //说明页面有海外仓信息，但是数据库里面没有，所以需要更新数据库
-                                let modSql = 'UPDATE companyinfo SET isHaveHaiCang=? WHERE id = ?';
-                                let modSqlParams = [isHaveHaiCang, id];
+                                let modSql = 'UPDATE companyinfo SET isHaveHaiCang=?,updatetime=? WHERE id = ?';
+                                let modSqlParams = [isHaveHaiCang, id,nowtime];
                                 console.log("----------准备更新海外仓id=",id);
                                 let updateflag=0
                                 while(updateflag==0){
