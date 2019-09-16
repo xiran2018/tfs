@@ -208,12 +208,18 @@ async function openLinkAndGetInfomation(browser,linkargsonc,pageNumberArgs,categ
                                 let id = comInfo["id"];
                                 let isHaveHaiCang =comInfo["isHaveHaiCang"];
                                 let storeName = comInfo["storeName"];
-                                storeName = storeName +"|#|"+info[8]["content"]; //把这个店铺的名称加上，用|#分割即可
+                                if(storeName!=null && storeName!="" && storeName!=undefined)
+                                    storeName = storeName +"|#|"+info[8]["content"]; //把这个店铺的名称加上，用|#|分割即可
+                                else
+                                    storeName = info[8]["content"];
                                 if(isHaveHaiCang == 0 || isHaveHaiCang == null){ //已经存储的是没有海外仓
                                     isHaveHaiCang=info[10]["content"];
                                 }
                                 let url = comInfo["url"];
-                                url = url+"|"+productUrl;
+                                if(url!=null && url!="" && url!=undefined)
+                                    url = url+"|"+productUrl;
+                                else
+                                    url = productUrl;
                                 countindb = countindb + 1;
 
                                 let modSql = 'UPDATE companyinfo SET storeName=?, countNumber = ?,isHaveHaiCang=?,url = ?,updatetime = ? WHERE id = ?';
@@ -373,16 +379,28 @@ async function getInfoByCompany(companyName){
     // console.log(result.length);
     if(result.length>0){
         let deleteResult = await deleteInfo(result); //删除多余的公司信息
+        // {"flag":true,"count":count,"url":url,"isHaiCang":isHaiCang,"storename":storename};
         let count = result[0].countNumber;
         let url= result[0].url;
         let isHaveHai = result[0].isHaveHaiCang;
+        let storename = result[0].storeName;
         if(deleteResult["flag"]){
             count = count + deleteResult["count"];
-            url = url +"|"+ deleteResult["url"];
+
+            if(url!="" && url!=null)
+                url = url +"|"+ deleteResult["url"];
+            else
+                url = deleteResult["url"];
+
             if(isHaveHai == 0)
                 isHaveHai = deleteResult["isHaiCang"];
+
+            if(storename!="" && storename!=null)
+                storename = storename+"|#|"+deleteResult["storename"];
+            else
+                storename = deleteResult["storename"];
         }
-        return {"flag":true,"count":count,"storeName":result[0].storeName,"isHaveHaiCang":isHaveHai,"id":result[0].id,"url":url};
+        return {"flag":true,"count":count,"storeName":storename,"isHaveHaiCang":isHaveHai,"id":result[0].id,"url":url};
 
     }
     else{
@@ -395,6 +413,7 @@ async function getInfoByCompany(companyName){
 async function deleteInfo(result){
     var count=0;
     var url="";
+    var storename="";
     var isHaiCang=0;
     if(result.length>1){ //如果多于1个才删除
         for(let i =1;i<result.length;i++){ //从第一个开始删除，第0个需要更新消息
@@ -405,6 +424,12 @@ async function deleteInfo(result){
                 url=result[i].url;
             else
                 url=url+"|"+result[i].url;
+
+
+            if(storename=="")
+                storename=result[i].storeName;
+            else
+                storename=storename+"|#|"+result[i].storeName;
             //删除这个条目 DELETE FROM websites where id=6
             let id= result[i].id;
             let modSql = 'DELETE FROM  companyinfo WHERE id = ?';
@@ -425,7 +450,7 @@ async function deleteInfo(result){
 
             }
         }//end of for
-        return {"flag":true,"count":count,"url":url,"isHaiCang":isHaiCang};
+        return {"flag":true,"count":count,"url":url,"isHaiCang":isHaiCang,"storename":storename};
     }
     else{
         return {"flag":false,"count":count,"url":url};
