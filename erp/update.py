@@ -3,6 +3,7 @@ from db import app
 from flask import Flask, request, jsonify,render_template,session
 
 import os
+import shutil
 
 from datetime import timedelta
 
@@ -56,21 +57,33 @@ def exportCompany():
 def updateCompany():
     start =2
     print("==================start==={}".format(start))
-    end =100
+    end =-1
     print("==================end==={}".format(end))
-    filePath = "共99个"
-    print("==================filePath==={}".format(filePath))
-    if(filePath==""):
-        print({"flag": False, "tips": "缺少文件名称选项"})
-        return
-    elif(filePath.find(".")==-1):
-        filePath=filePath+".xlsx"
-    sheetName = ""
-    if sheetName=="":
-        sheetName = "Sheet1"
-    result = update(filePath,sheetName,start,end)  # 返回结果{"flag": True, "tips": "更新数据成功","count":""}
+    # filePath = "jing/共200个 房梦丹"
 
-    return result
+    # print("==================filePath==={}".format(filePath))
+    # if(filePath==""):
+    #     print({"flag": False, "tips": "缺少文件名称选项"})
+    #     return
+    # elif(filePath.find(".")==-1):
+    #     filePath=filePath+".xlsx"
+    target_path = os.path.abspath(r'jing')
+    if os.path.exists(target_path):
+        # root 所指的是当前正在遍历的这个文件夹的本身的地址
+        # dirs 是一个 list，内容是该文件夹中所有的目录的名字(不包括子目录)
+        # files 同样是 list, 内容是该文件夹中所有的文件(不包括子目录)
+        for root, dirs, files in os.walk(target_path):
+            for file in files:
+                filePath = os.path.join(root, file)
+
+                print(filePath)
+                sheetName = ""
+                if sheetName=="":
+                    sheetName = "Sheet1"
+                result = update(filePath,sheetName,start,end)  # 返回结果{"flag": True, "tips": "更新数据成功","count":""}
+                # shutil.copy(filePath, 'jing/haveProcess')
+                shutil.move(filePath, 'haveProcess')
+                print(result)
     # return jsonify(result)
 
 
