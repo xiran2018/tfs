@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- 新 Bootstrap4 核心 CSS 文件 -->
+    <link rel="stylesheet" href="../static/css/bootstrap.css">
+
+    <link rel="stylesheet" href="../static/css/signin.css">
+
+    <link rel="stylesheet" href="../static/scss/utilities/_spacing.scss">
+
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="../static/js/jquery-1.10.2.js"></script>
+
+    <!-- bootstrap.bundle.min.js 用于弹窗、提示、下拉菜单，包含了 popper.min.js -->
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+    <script src="../static/js/bootstrap.js"></script>
+
+</head>
+<body>
+<form action="/user/login" method="post" class="form-signin">
+    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+    <!--<label for="inputEmail" class="sr-only">Email address</label>-->
+    <label for="userName" class="sr-only">用户名</label>-
+    <input type="text" id="userName" name="userName" class="form-control" placeholder="用户名" required autofocus>
+    <!--<input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>-->
+    <label for="inputPassword" class="sr-only">密码</label>
+    <input type="password" id="inputPassword" name="inputPassword" class="form-control" placeholder="密码" required>
+    <div class="checkbox mb-3">
+        <label>
+            <input type="checkbox" value="remember-me"> Remember me
+        </label>
+    </div>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    <p class="mt-5 mb-3 text-muted">&copy; 2017-2019</p>
+</form>
+</body>
+</html>

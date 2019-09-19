@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>导出信息</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- 新 Bootstrap4 核心 CSS 文件 -->
+    <link rel="stylesheet" href="../../static/css/bootstrap.css">
+
+      <!--<link rel="stylesheet" href="../../static/css/product.css">-->
+    <link rel="stylesheet" href="../../static/css/carousel.css">
+
+    <link rel="stylesheet" href="../../static/scss/utilities/_spacing.scss">
+
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="../../static/js/jquery-1.10.2.js"></script>
+    <script src="../../static/js/jquery-ui.js"></script>
+    <script src="../../static/js/common.js"></script>
+    <script src="../../static/js/company/company.js"></script>
+
+    <!-- bootstrap.bundle.min.js 用于弹窗、提示、下拉菜单，包含了 popper.min.js -->
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+    <script src="../../static/js/bootstrap.js"></script>
+
+    <link href="../../static/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+    <script src="../../static/js/bootstrap-datetimepicker.js"></script>
+
+    <script src="../../static/js/moment.js"></script>
+    <link rel="stylesheet" href="../../static/css/tempusdominus-bootstrap-4.css">
+    <script src="../../static/js/tempusdominus-bootstrap-4.js"></script>
+
+    <!--<link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">-->
+
+    <link rel="stylesheet" href="../../static/font-awesome/css/font-awesome.min.css">
+
+    <!--<script src="../../static/js/company/showPagination.js"></script>-->
+    <link rel="stylesheet" href="../../static/css/pagination.css">
+
+
+</head>
+<body>
+
+{% include "header.html" %}
+<form action="/p/export" method=post>
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light"
+         style="padding: 1rem !important;">
+        <div class="container-fluid">
+            <div class="search">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">公司名称</span>
+                    </div>
+                    <div class="col-xs-2">
+                        <input type="text" id="companyName" name="companyName" class="form-control" placeholder="公司名称">
+                    </div>
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">店铺名称</span>
+                    </div>
+                    <!--<input type="text" class="form-control" placeholder="店铺名称">-->
+                    <input class="input-small" type="text" id="storeName" name="storeName"  placeholder="店铺名称">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">所属人</span>
+                    </div>
+                    <input type="text" class="input-small" id="belongTo"  name="belongTo"   placeholder="所属人">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">客户编号</span>
+                    </div>
+                    <input type="text" class="input-small" id="bianhao"  name="bianhao"   placeholder="客户编号">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">所属省份</span>
+                    </div>
+                    <input type="text" class="input-small" id="shengfen"  name="shengfen"  placeholder="所属省份">
+
+                </div>
+
+            </div>
+            <div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">所属城市</span>
+                    </div>
+                    <input type="text" class="input-small" id="city"  name="city" placeholder="所属城市">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">店铺数量</span>
+                    </div>
+                    <input type="text" class="input-small" id="countNumber" name="countNumber"  placeholder="店铺数量">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">参保人数</span>
+                    </div>
+                    <input type="text" class="input-small" id="canbaorenshu" name="canbaorenshu" placeholder="参保人数">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">有/无仓</span>
+                    </div>
+                    <select class="form-control" id="isHaveCang" name="isHaveCang" >
+                        <option>0</option>
+                        <option>1</option>
+                    </select>
+
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">营销次数</span>
+                    </div>
+                    <input type="text" class="input-small" id="yingxiaocount" name="yingxiaocount" placeholder="营销次数">
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">数据编号</span>
+                    </div>
+                    <input type="text" class="input-small" id="startNumber" name="startNumber"  placeholder="起始编号">
+                    --<input type="text" class="input-small" id="endNumber" name="endNumber" placeholder="结束编号">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">继续导出</span>
+                    </div>
+                    <select class="form-control" id="isFromFileNumber" name="isFromFileNumber" >
+                        <option>0</option>
+                        <option>1</option>
+                    </select>
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">时间</span>
+                    </div>
+                    <!--<input type="text" id="gmtBeginDate" class="form-control" placeholder="起始时间">- -->
+                    <!--<input type="text" id="gmtEndDate" class="form-control" placeholder="结束时间">-->
+                    <div class="input-group-prepend date" id="datetimepicker1" data-target-input="nearest">
+                        <input type="text" id="startTime" name="startTime" class="form-control datetimepicker-input"
+                               data-target="#datetimepicker1"/>
+                        <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="input-group-prepend date" id="datetimepicker2" data-target-input="nearest">
+                        <input type="text" id="endTime" name="endTime" class="form-control datetimepicker-input"
+                               data-target="#datetimepicker2"/>
+                        <div class="input-group-append" data-target="#datetimepicker2" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="input-group-prepend" id="searchDiv">
+                        <button type="submit" id="search" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+</form>
+
+{% include "footer.html" %}
+</body>
+</html>

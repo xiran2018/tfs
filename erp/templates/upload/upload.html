@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>导出信息</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- 新 Bootstrap4 核心 CSS 文件 -->
+    <link rel="stylesheet" href="../../static/css/bootstrap.css">
+
+    <!--<link rel="stylesheet" href="../../static/css/product.css">-->
+    <link rel="stylesheet" href="../../static/css/carousel.css">
+
+    <link rel="stylesheet" href="../../static/scss/utilities/_spacing.scss">
+
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="../../static/js/jquery-1.10.2.js"></script>
+    <script src="../../static/js/jquery-ui.js"></script>
+    <script src="../../static/js/common.js"></script>
+    <script src="../../static/js/upload/upload.js"></script>
+
+    <!-- bootstrap.bundle.min.js 用于弹窗、提示、下拉菜单，包含了 popper.min.js -->
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+    <script src="../../static/js/bootstrap.js"></script>
+
+    <link href="../../static/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+    <script src="../../static/js/bootstrap-datetimepicker.js"></script>
+
+    <script src="../../static/js/moment.js"></script>
+    <link rel="stylesheet" href="../../static/css/tempusdominus-bootstrap-4.css">
+    <script src="../../static/js/tempusdominus-bootstrap-4.js"></script>
+
+    <!--<link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">-->
+
+    <link rel="stylesheet" href="../../static/font-awesome/css/font-awesome.min.css">
+
+    <script src="../../static/js/upload/showPagination.js"></script>
+    <link rel="stylesheet" href="../../static/css/pagination.css">
+
+
+</head>
+<body>
+
+{% include "header.html" %}
+<!--这个是通过ajax下载的-->
+<!--<button type="submit" id="search1" class="btn btn-primary">Submit</button>-->
+<!--========================================================================-->
+<!--这个是通过ajax上传的，我为了偷懒，没有用这种方式-->
+<!--<button type="submit" id="search2" class="btn btn-primary">upload</button>-->
+<!--<form  id="uploadForm"   enctype=multipart/form-data>-->
+<!--========================================================================-->
+
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light"
+     style="padding: 1rem !important;">
+    <div class="container-fluid">
+        <form action="/p/upload" id="uploadForm" method=post enctype=multipart/form-data>
+            <div class="search">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">文件上传</span>
+                    </div>
+                    <input class="" type="file" name="fileName" value="请选择excel">
+                    <div class="input-group-prepend" id="searchDiv">
+                        <button type="submit" id="uploadSubmit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+
+
+            </div>
+        </form>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">文件名称</span>
+            </div>
+            <input type="text" class="input-small" id="searchName" name="searchName" placeholder="文件名称">
+            <div class="input-group-prepend">
+                <span class="input-group-text">所属人</span>
+            </div>
+            <input type="text" class="input-small" id="belongTo" name="belongTo" placeholder="所属人">
+            <div class="input-group-prepend">
+                <span class="input-group-text">时间</span>
+            </div>
+            <!--<input type="text" id="gmtBeginDate" class="form-control" placeholder="起始时间">- -->
+            <!--<input type="text" id="gmtEndDate" class="form-control" placeholder="结束时间">-->
+            <div class="input-group-prepend date" id="datetimepicker1" data-target-input="nearest">
+                <input type="text" id="startTime" name="startTime" class="form-control datetimepicker-input"
+                       data-target="#datetimepicker1"/>
+                <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+            <div class="input-group-prepend date" id="datetimepicker2" data-target-input="nearest">
+                <input type="text" id="endTime" name="endTime" class="form-control datetimepicker-input"
+                       data-target="#datetimepicker2"/>
+                <div class="input-group-append" data-target="#datetimepicker2" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+            <div class="input-group-prepend" id="searchDiv">
+                <button type="submit" id="search" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light"
+     style="padding: 1rem !important;">
+
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">序号</th>
+            <th scope="col">所属用户</th>
+            <th scope="col">文件名称</th>
+            <th scope="col">状态</th>
+            <th scope="col">更新次数</th>
+            <th scope="col">更新行号</th>
+            <th scope="col">上传时间</th>
+            <th scope="col">更新时间</th>
+            <th scope="col">操作</th>
+        </tr>
+        </thead>
+        <tbody id="companyInfo">
+        </tbody>
+    </table>
+    <div class="digg" id="diggId"></div>  <!-- 显示分页按钮时需要的div -->
+</div>
+
+{% include "footer.html" %}
+</body>
+</html>

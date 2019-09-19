@@ -1,0 +1,16 @@
+Click==7.0
+et-xmlfile==1.0.1
+Flask==1.1.1
+Flask-SQLAlchemy==2.4.0
+gunicorn==19.9.0
+itsdangerous==1.1.0
+jdcal==1.4.1
+Jinja2==2.10.1
+MarkupSafe==1.1.1
+marshmallow==3.0.5
+openpyxl==2.6.3
+PyMySQL==0.9.3
+SQLAlchemy==1.0.13
+Werkzeug==0.15.6
+xlrd==1.2.0
+xpinyin==0.5.6

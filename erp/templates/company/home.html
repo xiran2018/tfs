@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>商家信息</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- 新 Bootstrap4 核心 CSS 文件 -->
+    <link rel="stylesheet" href="../../static/css/bootstrap.css">
+
+        <!--<link rel="stylesheet" href="../../static/css/product.css">-->
+    <link rel="stylesheet" href="../../static/css/carousel.css">
+
+    <link rel="stylesheet" href="../../static/scss/utilities/_spacing.scss">
+
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="../../static/js/jquery-1.10.2.js"></script>
+    <script src="../../static/js/jquery-ui.js"></script>
+    <script src="../../static/js/common.js"></script>
+    <script src="../../static/js/company/company.js"></script>
+
+    <!-- bootstrap.bundle.min.js 用于弹窗、提示、下拉菜单，包含了 popper.min.js -->
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+
+    <!-- 最新的 Bootstrap4 核心 JavaScript 文件 -->
+    <script src="../../static/js/bootstrap.js"></script>
+
+    <link href="../../static/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+    <script src="../../static/js/bootstrap-datetimepicker.js"></script>
+
+    <script src="../../static/js/moment.js"></script>
+    <link rel="stylesheet" href="../../static/css/tempusdominus-bootstrap-4.css">
+    <script src="../../static/js/tempusdominus-bootstrap-4.js"></script>
+
+    <!--<link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">-->
+
+    <link rel="stylesheet" href="../../static/font-awesome/css/font-awesome.min.css">
+
+    <script src="../../static/js/company/showPagination.js"></script>
+    <link rel="stylesheet" href="../../static/css/pagination.css">
+
+
+</head>
+<body>
+
+{% include "header.html" %}
+
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light" style="padding: 1rem !important;">
+    <div class="container-fluid">
+        <div class="search">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">公司名称</span>
+                </div>
+                <div class="col-xs-2">
+                    <input type="text" id="companyName" class="form-control" placeholder="公司名称">
+                </div>
+                <div class="input-group-prepend">
+                    <span class="input-group-text">店铺名称</span>
+                </div>
+                <!--<input type="text" class="form-control" placeholder="店铺名称">-->
+                <input class="input-small" type="text" id="storeName" placeholder="店铺名称">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">所属人</span>
+                </div>
+                <input type="text" class="input-small" id="belongTo" placeholder="所属人">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">编号</span>
+                </div>
+                <input type="text" class="input-small" id="bianhao" placeholder="客户编号">
+                <!--<div class="input-group-prepend">-->
+                <!--<span class="input-group-text">时间</span>-->
+                <!--</div>-->
+                <!--&lt;!&ndash;<input type="text" id="gmtBeginDate" class="form-control" placeholder="起始时间">- &ndash;&gt;-->
+                <!--&lt;!&ndash;<input type="text" id="gmtEndDate" class="form-control" placeholder="结束时间">&ndash;&gt;-->
+                <!--<div class="input-group-prepend date" id="datetimepicker1" data-target-input="nearest">-->
+                <!--<input type="text" id="startTime" class="form-control datetimepicker-input" data-target="#datetimepicker1"/>-->
+                <!--<div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">-->
+                <!--<div class="input-group-text"><i class="fa fa-calendar"></i></div>-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--<div class="input-group-prepend date" id="datetimepicker2" data-target-input="nearest">-->
+                <!--<input type="text" id="endTime" class="form-control datetimepicker-input" data-target="#datetimepicker2"/>-->
+                <!--<div class="input-group-append" data-target="#datetimepicker2" data-toggle="datetimepicker">-->
+                <!--<div class="input-group-text"><i class="fa fa-calendar"></i></div>-->
+                <!--</div>-->
+                <!--</div>-->
+                <!--<div class="input-group-prepend" id="searchDiv">-->
+                <!--<button type="submit" id="search" class="btn btn-primary">Submit</button>-->
+                <!--</div>-->
+            </div>
+
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">时间</span>
+            </div>
+            <!--<input type="text" id="gmtBeginDate" class="form-control" placeholder="起始时间">- -->
+            <!--<input type="text" id="gmtEndDate" class="form-control" placeholder="结束时间">-->
+            <div class="input-group-prepend date" id="datetimepicker1" data-target-input="nearest">
+                <input type="text" id="startTime" class="form-control datetimepicker-input"
+                       data-target="#datetimepicker1"/>
+                <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+            <div class="input-group-prepend date" id="datetimepicker2" data-target-input="nearest">
+                <input type="text" id="endTime" class="form-control datetimepicker-input"
+                       data-target="#datetimepicker2"/>
+                <div class="input-group-append" data-target="#datetimepicker2" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+            <div class="input-group-prepend" id="searchDiv">
+                <button type="submit" id="search" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+
+
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col">序号</th>
+                <th scope="col">公司名称</th>
+                <th scope="col">类别</th>
+                <th scope="col">店铺数量</th>
+                <th scope="col">有/无仓</th>
+                <th scope="col">促销次数</th>
+                <th scope="col">城市</th>
+                <th scope="col">所属人</th>
+                <th scope="col">编号</th>
+                <th scope="col">手机</th>
+                <th scope="col">电话</th>
+                <th scope="col">邮箱</th>
+                <th scope="col">时间</th>
+                <th scope="col">操作</th>
+            </tr>
+            </thead>
+            <tbody id="companyInfo">
+            <!--<tr>-->
+            <!--<th scope="row">1</th>-->
+            <!--<td>Mark</td>-->
+            <!--<td>Otto</td>-->
+            <!--<td>@mdo</td>-->
+            <!--</tr>-->
+            <!--<tr>-->
+            <!--<th scope="row">2</th>-->
+            <!--<td>Jacob</td>-->
+            <!--<td>Thornton</td>-->
+            <!--<td>@fat</td>-->
+            <!--</tr>-->
+            <!--<tr>-->
+            <!--<th scope="row">3</th>-->
+            <!--<td colspan="2">Larry the Bird</td>-->
+            <!--<td>@twitter</td>-->
+            <!--</tr>-->
+            </tbody>
+        </table>
+        <div class="digg" id="diggId"></div>  <!-- 显示分页按钮时需要的div -->
+    </div>
+</div>
+
+<!--<div id="xiangxiw" class="ui-widget;"></div>-->
+<!-- Modal -->
+<div class="modal fade" id="xiangQing" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">详情信息</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="xiangxiContent">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "footer.html" %}
+</body>
+</html>
