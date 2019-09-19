@@ -20,24 +20,6 @@ app.config['PERMANENT_SESSION_LIFETIME']=timedelta(hours=1) #设置session的保
 #添加数据到session
 #操作的时候更操作字典是一样的
 
-@app.before_request
-def print_request_info():
-    print("请求地址：" + str(request.path))
-    if 'username' in session:
-        print('已登录')
-        pass
-    else:
-        # return '未登录'
-        print('未登录')
-        pass
-
-    # print("请求地址：" + str(request.path))
-    # print("请求方法：" + str(request.method))
-    # print("---请求headers--start--")
-    # print(str(request.headers).rstrip())
-    # print("---请求headers--end----")
-    # print("GET参数：" + str(request.args))
-    # print("POST参数：" + str(request.form))
 
 app.register_blueprint(admin,url_prefix='/admin')
 app.register_blueprint(user, url_prefix='/user')
@@ -55,10 +37,10 @@ def exportCompany():
     print(resultExport)
 
 def updateCompany():
-    start =2
-    print("==================start==={}".format(start))
-    end =-1
-    print("==================end==={}".format(end))
+    start = 2
+    # print("==================start==={}".format(start))
+    end = -1
+    # print("==================end==={}".format(end))
     # filePath = "jing/共200个 房梦丹"
 
     # print("==================filePath==={}".format(filePath))
@@ -67,7 +49,7 @@ def updateCompany():
     #     return
     # elif(filePath.find(".")==-1):
     #     filePath=filePath+".xlsx"
-    target_path = os.path.abspath(r'jing')
+    target_path = os.path.abspath(r'upload')
     if os.path.exists(target_path):
         # root 所指的是当前正在遍历的这个文件夹的本身的地址
         # dirs 是一个 list，内容是该文件夹中所有的目录的名字(不包括子目录)
@@ -80,8 +62,10 @@ def updateCompany():
                 sheetName = ""
                 if sheetName=="":
                     sheetName = "Sheet1"
-                result = update(filePath,sheetName,start,end)  # 返回结果{"flag": True, "tips": "更新数据成功","count":""}
-                # shutil.copy(filePath, 'jing/haveProcess')
+                isUseNewUser = 1
+                isquchong = 0
+                result = update(-1,filePath,sheetName,start,end,isUseNewUser,isquchong)  # 返回结果{"flag": True, "tips": "更新数据成功","count":""}
+                # shutil.copy(filePath, 'jing/haveProcess.xlsx')
                 shutil.move(filePath, 'haveProcess')
                 print(result)
     # return jsonify(result)

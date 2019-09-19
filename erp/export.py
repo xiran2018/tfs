@@ -18,25 +18,6 @@ app.config['PERMANENT_SESSION_LIFETIME']=timedelta(hours=1) #设置session的保
 #添加数据到session
 #操作的时候更操作字典是一样的
 
-@app.before_request
-def print_request_info():
-    print("请求地址：" + str(request.path))
-    if 'username' in session:
-        print('已登录')
-        pass
-    else:
-        # return '未登录'
-        print('未登录')
-        pass
-
-    # print("请求地址：" + str(request.path))
-    # print("请求方法：" + str(request.method))
-    # print("---请求headers--start--")
-    # print(str(request.headers).rstrip())
-    # print("---请求headers--end----")
-    # print("GET参数：" + str(request.args))
-    # print("POST参数：" + str(request.form))
-
 app.register_blueprint(admin,url_prefix='/admin')
 app.register_blueprint(user, url_prefix='/user')
 app.register_blueprint(company, url_prefix='/p')

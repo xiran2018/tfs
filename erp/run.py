@@ -1,6 +1,6 @@
 from db import db
 from db import app
-from flask import Flask, request, jsonify,render_template,session
+from flask import Flask, request, jsonify,render_template,session,redirect
 
 import os
 
@@ -18,15 +18,24 @@ app.config['PERMANENT_SESSION_LIFETIME']=timedelta(hours=1) #设置session的保
 #操作的时候更操作字典是一样的
 
 @app.before_request
-def print_request_info():
-    print("请求地址：" + str(request.path))
-    if 'username' in session:
-        print('已登录')
+def before_request_filter():
+    # print("请求地址：" + str(request.path))
+    requestPath=str(request.path)
+    notfilterURL = ["/user/loginHtml", "/user/login"]
+    if requestPath.find("static")>-1: #说明是静态文件
+        pass
+    # print("===============请求地址：" + str(request.path))
+    elif requestPath in notfilterURL:
+        # print("===============不需要过滤")
         pass
     else:
-        # return '未登录'
-        print('未登录')
-        pass
+        if 'userId' in session and 'type' in session:
+            # print('已登录')
+            pass
+        else:
+            # print('未登录,要跳转到登录页面')
+            return redirect("/user/loginHtml")
+
 
     # print("请求地址：" + str(request.path))
     # print("请求方法：" + str(request.method))
@@ -44,4 +53,4 @@ app.register_blueprint(company, url_prefix='/p')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=8088, debug=True)

@@ -87,13 +87,32 @@ def getUserInfo():
     return user;
 
 
-def getData(start,end):
-    print("=================start=================={}".format(start))
-    print("=================end=================={}".format(end))
-    pn = CompanyInfo.query.filter(
-        CompanyInfo.id.between(start,end) if start is not None and start != -1 and end is not None and end != -1 else "",
-        CompanyInfo.id>start if start is not None and start != -1 and end==-1 else ""
-    ).all()
+def getData(start,companyName,storeName,userId,bianhao,shengfen,city, \
+                          countNumber, canbaorenshu, isHaveCang, startNumber, \
+                          endNumber, yingxiaocount, startTime,endTime,isFromFileNumber):
+    if(isFromFileNumber==1):
+        print("===============从哪一行开始读取文件=================={}".format(start))
+        # print("=================end=================={}".format(end))
+        pn = CompanyInfo.query.filter(
+            CompanyInfo.id>start if start is not None and start != -1 else "",
+        ).all()
+    else:
+        pn = CompanyInfo.query.filter(
+            CompanyInfo.companyName.like("%" + companyName + "%") if companyName is not None and companyName != "" else "",
+            CompanyInfo.storeName.like("%" + storeName + "%") if storeName is not None and storeName != "" else "",
+            CompanyInfo.belongTo == userId if userId is not None and userId != "" else "",
+            CompanyInfo.customBianHao.like("%" + bianhao + "%") if bianhao is not None and bianhao != "" else "",
+            CompanyInfo.shengfen.like("%" + shengfen + "%") if shengfen is not None and shengfen != "" else "",
+            CompanyInfo.shengfen.like("%" + city + "%") if city is not None and city != "" else "",
+            CompanyInfo.countNumber>= countNumber if countNumber is not None and countNumber != "" else "",
+            CompanyInfo.canbaorenshu> canbaorenshu if canbaorenshu is not None and canbaorenshu != "" else "",
+            CompanyInfo.isHaveHaiCang==isHaveCang if isHaveCang is not None and isHaveCang != "" else "",
+            CompanyInfo.id.between(startNumber,endNumber) if startNumber is not None and startNumber != "" and endNumber is not None and endNumber != "" else "",
+            CompanyInfo.id > startTime if startTime is not None and startTime != "" and (endNumber is None or endNumber == "") else "",
+            CompanyInfo.cuxiaocount == yingxiaocount if yingxiaocount is not None and yingxiaocount != "" else "",
+            CompanyInfo.updatetime.between(startTime,endTime) if startTime is not None and startTime != "" and endTime is not None and endTime != "" else "",
+            CompanyInfo.updatetime > startTime if startTime is not None and startTime != "" and (endTime is None or endTime == "") else "",
+        ).all()
     # pn = CompanyInfo.query.filter(CompanyInfo.id > 10052).all()
     # print("================长度如下===================")
     # print(len(pn))
@@ -125,9 +144,9 @@ def getTelAndMail(TelAndMailInfos):
         status = ele.status
         beizhu = ele.beizhu
         if beizhu!=None:
-            value = value+"#"+status+"|"+beizhu
+            value = value+"#"+str(status)+"|"+beizhu
         else:
-            value = value+"#" + status
+            value = value+"#" + str(status)
 
         if(type == 1):
             if(tel==""):
@@ -140,17 +159,18 @@ def getTelAndMail(TelAndMailInfos):
             else:
                 dianhua = dianhua + ";" + value
         elif(type==3):
+            if (qq == ""):
+                qq = value
+            else:
+                qq = qq + ";" + value
+        elif (type == 4):
             if (mail == ""):
                 mail = value
             else:
                 mail = mail + ";" + value
-        elif (type == 4):
-                if (qq == ""):
-                    qq = value
-                else:
-                    qq = qq + ";" + value
+
     return tel,dianhua,mail,qq
-def generateExcel(results,excelName):
+def generateExcel(results,target_path,excelName,isFromFileNumber):
 
 
 
@@ -208,15 +228,6 @@ def generateExcel(results,excelName):
     table.cell(row=i, column=33, value="登记机关")
     table.cell(row=i, column=34, value="来源")
     table.cell(row=i, column=35, value="更新时间")
-
-
-
-
-
-
-
-
-
 
     lastRowNumber=-1
     for row in results:
@@ -277,20 +288,8 @@ def generateExcel(results,excelName):
         table.cell(row=i, column=34, value=row.datafrom)
         table.cell(row=i, column=35, value=row.updatetime)
 
-
-
-
-
-
-
-
-
-    writeFile("pythonLastRead.txt",str(lastRowNumber))
-
-
-
-
-
+    if isFromFileNumber==1: #说明是从上次读取的位置读取的，需要更新文件
+        writeFile("pythonLastRead.txt",str(lastRowNumber))
 
     # 调整列宽
     # table.column_dimensions['A'].width = 20.0
@@ -315,10 +314,10 @@ def generateExcel(results,excelName):
     haveRead = "读取了";
     tiaoshu = i-1
     excelName="{}-{}-{}-{}条.xlsx".format(excelName,now_time,haveRead,tiaoshu)
-
-    if(delFile(excelName)):
-        wb.save(excelName)
-        print("保存文件成功:{}，数据条数:{}".format(excelName,tiaoshu))
+    FilePath = target_path+"/"+excelName
+    if(delFile(FilePath)):
+        wb.save(FilePath)
+        print("保存文件成功:{}，数据条数:{}".format(FilePath,tiaoshu))
         return{"flag":True,"path":excelName}
 
 
@@ -337,28 +336,29 @@ def delFile(file):
         return False
 
 
-def export(start,end):
+def export(companyName,storeName,userId,bianhao,shengfen,city, \
+                          countNumber, canbaorenshu, isHaveCang, startNumber, \
+                          endNumber, yingxiaocount, startTime,endTime,isFromFileNumber,target_path):
 
 
     readStart = readFile("pythonLastRead.txt")
-    # readStart = 10052
 
-    if readStart in ["",'','\n','\r\n']:
-        if start == -1: # 没有输入参数，且读文件的时候，没有读取到起始位置
-            return {"flag":False,"tips":"请确保PythonLastRead配置文件正确，或者输入s参数"}
-    if start != -1:
-        readStart = start
+    if isFromFileNumber==1:# 需要从上次读取的数据库位置开始读取,上次读取的位置存在了pythonLastRead.txt中
+        if readStart in ["",'','\n','\r\n']: #文件内容为空
+             return {"flag":False,"tips":"请确保PythonLastRead配置文件正确"}
+    else:
+        readStart = int(readStart)
 
     file_name = '服务器导出文件'
 
-
-
-    results=getData(readStart,end)
+    results=getData(readStart,companyName,storeName,userId,bianhao,shengfen,city, \
+                          countNumber, canbaorenshu, isHaveCang, startNumber, \
+                          endNumber, yingxiaocount, startTime,endTime,isFromFileNumber)
     # print("================长度如下===================")
     # print(len(results))
     # return {"flag": True, "tips": "导出文件成功"}
     if(len(results)>0):
-        resultFile=generateExcel(results,file_name)
+        resultFile=generateExcel(results,target_path,file_name,isFromFileNumber)
         print("--> Finished generate excel")
         return {"flag": resultFile["flag"], "tips": "导出文件成功","path":resultFile["path"]}
     else:

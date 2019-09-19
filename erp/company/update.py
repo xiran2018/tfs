@@ -6,6 +6,7 @@ import xlrd
 from .models.companyInfo import *
 from .models.jiyingStatus import *
 from .models.qiyeType import *
+from .models.fileInfo import *
 from user.models.userInfo import *
 from .models.telAndMail import *
 sys.path.append("..")
@@ -89,7 +90,7 @@ def updateTelAndMailIDInDB(baoliuId,delId):
             return {"flag": False}  # 错误
     return{"flag":True}
 
-def updateDB(content): # content是从excel读取出来的每一行
+def updateDB(content,isUseNewUser): # content是从excel读取出来的每一行
 
     companyName = content[9]
     print("=======companyName:{}".format(companyName))
@@ -99,7 +100,7 @@ def updateDB(content): # content是从excel读取出来的每一行
     storeCount = 0;
     url = "";
     companyLink = ""
-    print("=======companyLen:{}".format(len(pn)))
+    # print("=======companyLen:{}".format(len(pn)))
     rangList = range(1,len(pn))
     for i in rangList:
         ele = pn[i];
@@ -143,25 +144,29 @@ def updateDB(content): # content是从excel读取出来的每一行
 
     if(len(pn)>0): #说明有元素
         ele = pn[0]
+        isHaveCompany = True
+        print("hohohohohohoho有公司信息,长度为：{}".format(len(pn)))
     else:
         print("没有公司信息")
+        isHaveCompany = False
         ele = ""
-
-    result1=updateUser(ele,content)    # 更新所属人员表
+    # print("=================1111==========oldUserID:".format(pn[0].id))
+    result1=updateUser(ele,content,isUseNewUser)    # 更新所属人员表,isUseNewUser=0，表示不使用新的用户
+    # print("================result1====userid:{}".format(result1["id"]))
     if(result1["flag"]!=0):
         userid = result1["id"]
     else:
-        return {"flag":False,"tips":"更新用户失败"}
+        return {"flag":0,"tips":"更新用户失败"}
     result2=updateJYStatus(ele,content) # 更新经营状态表
     if(result2["flag"]!=0):
         jingyingid = result2["id"]
     else:
-        return {"flag":False,"tips":"更新用户失败"}
+        return {"flag":0,"tips":"更新经营状态失败"}
     result3=updateQiYeType(ele,content) # 更新企业类型表
     if (result3["flag"] != 0):
         qiyeTypeid = result3["id"]
     else:
-        return {"flag": False, "tips": "更新用户失败"}
+        return {"flag": 0, "tips": "更新企业类型失败"}
 
     reslut4=updateCompany(ele,content,storeName,storeCount,url,companyLink,userid,jingyingid,qiyeTypeid) # 更新企业基本信息
     # {"flag": 1, "id": id}
@@ -171,22 +176,33 @@ def updateDB(content): # content是从excel读取出来的每一行
         id = pn[0].id
     reslut5=updateTelAndMail(id,content) #更新电话和邮箱等信息
 
+    if isHaveCompany:  # 说明有元素
+        return {"flag": 1}
+    else:
+        return {"flag": 2}
 
 
-def updateUser(ele,content):
+
+def updateUser(ele,content,isUseNewUser=0): #isUseNewUser代表是否使用新的用户
     oldUserID =""
     if ele!=None and ele!="":
         oldUserID = ele.belongTo
-    if oldUserID!=None and oldUserID!="": #原有元素就有用户，则所属用户不变化
+        # print("===========================oldUserID:{}".format(oldUserID))
+    if oldUserID!=None and oldUserID!="" and isUseNewUser==0: #原有元素就有用户，则所属用户不变化
 
         return  {"flag": 2, "id": oldUserID}  # 数据库有数据
 
     else: #原有的条目没有用户信息
         belongToUser = content[2]
 
-        # print("所属用户：{}".format(belongToUser))
+        print("所属用户：{}".format(belongToUser))
 
         users = UserInfo.query.filter(UserInfo.realname == belongToUser).all()
+        #
+        # cis = UserInfoScheme()
+        # users = cis.dump(users)
+
+        # print("===========================lenght users:{}".format(len(users)))
         if(len(users)==0): # 说明没有这个用户，需要添加一个
             now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
             print("需要插入新用户")
@@ -197,11 +213,12 @@ def updateUser(ele,content):
                 username = belongToUser
             print("所属用户拼音：{}".format(username))
             userele = UserInfo(username, "123456", "", 1,belongToUser, now_time, now_time)
-            db.session.add(userele)
+
             try:
+                db.session.add(userele)
                 db.session.flush()
                 # 输出新插入数据的主键
-                id = ele.id
+                id = userele.id
                 # 此时数据才插入到数据库中
                 db.session.commit()
                 print("插入新用户成功,id={}".format(id))
@@ -209,6 +226,9 @@ def updateUser(ele,content):
             except Exception as e:
                 # return False
                 return {"flag": 0}  # 错误
+
+        # print("===========================username:{}".format(users[0].username))
+        # print("===========================userid:{}".format(users[0].id))
         return {"flag": 2, "id": users[0].id}  # 数据库有数据
 
 
@@ -262,10 +282,13 @@ def updateQiYeType(ele, content):
 
 
 def updateTelAndMailInDB(companyid,dataInDb,elements,type): # type= 1: 手机  2：电话  3：qq 4: 邮箱
+
     elements=str(elements)
     eleList = elements.split("; ")
-    for ele in eleList: # 遍历元素
 
+    for ele in eleList: # 遍历元素
+        dataInDbWithZero = TelAndMailInfo.query.filter(TelAndMailInfo.status == 0).all()  # 标记为0的电话
+        now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         status = -1
         beizhu = ""
         value = ""
@@ -274,7 +297,7 @@ def updateTelAndMailInDB(companyid,dataInDb,elements,type): # type= 1: 手机  2
         value = jinghaoSplit[0]
         if(len(jinghaoSplit)>=2): #说明有备注和状态
             sb = jinghaoSplit[1].split("|")
-            status = sb[0]
+            status = int(sb[0])
             if (len(sb) >= 2):  # 说明状态
                 beizhu = sb[1]
         if type ==1 or type ==2: # 1,2 为手机或者电话，混杂起来了
@@ -284,25 +307,54 @@ def updateTelAndMailInDB(companyid,dataInDb,elements,type): # type= 1: 手机  2
             else: # 说明是手机 type=1
                 type =1
 
+        if status==0: # 把数据库中已经有的信息，都转变为状态为0
+            dataWithSameTel = TelAndMailInfo.query.filter(TelAndMailInfo.type == type,
+                                                          TelAndMailInfo.value == value,
+                                                          ).all()  # 标记为0的电话
+            if(dataWithSameTel!=None):
+                for sameEle in dataWithSameTel:
+                    sameEle.status=0
+                    if beizhu != "":
+                        sameEle.beizhu = beizhu
+                    now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+                    sameEle.updatetime = now_time
+                    try:
+                        db.session.commit()
+                        # print("更新手机或者邮箱信息成功")
+                        break
+                        # return {"flag": 1, "tips": "更新企业信息成功"}
+                    except Exception as e:
+                        print(e)
 
-        isEleINDB = False # 是否在数据库中找到了这个元素的标志
+
+        #查看该手机或者电话是否在其他公司中标记了，如果其他公司已经标记了，且自己没有标注，就按照其他公司的对该信息的标注
+        for zeroEle in dataInDbWithZero:
+            if zeroEle.type == type and eleInDB.value == value: #说明找到了这个元素
+                if status == -1:  # 如果没有状态，就用以前的状态
+                    status = zeroEle.status
+                if  beizhu !=None and beizhu == "": # 如果没有说明，就用以前的说明
+                    beizhu = zeroEle.beizhu
+                break;
+
+
+        isEleINDB = False # 是否在companyid 的电话或者邮件信息中中找到了这个元素
         i = 0
         if value != None and value != "":
-            while (not isEleINDB) and i<len(dataInDb):
+            while (not isEleINDB) and i<len(dataInDb):  #dataInDb表示的是从数据库中取出来的外键是companyid的电话或者邮件
             # for eleInDB in dataInDb:
                 eleInDB = dataInDb[i]
                 i = i+1
                 if eleInDB.type == type and eleInDB.value == value: #说明找到了这个元素
                     isEleINDB = True
                     if status!=-1:
-                        eleInDB.status = status
+                        eleInDB.status = status # 更改元素信息
                     if(beizhu!=None and beizhu!=""):
                         eleInDB.beizhu = beizhu
                     now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
                     eleInDB.updatetime = now_time
                     try:
                         db.session.commit()
-                        print("更新手机或者邮箱信息成功")
+                        # print("更新手机或者邮箱信息成功")
                         break
                         # return {"flag": 1, "tips": "更新企业信息成功"}
                     except Exception as e:
@@ -311,20 +363,18 @@ def updateTelAndMailInDB(companyid,dataInDb,elements,type): # type= 1: 手机  2
                         # return {"flag": 0, "tips": "更新企业信息失败"}
                     # return {"flag": 1, "tips": "更新企业信息成功"}
             if not isEleINDB: # 说明没有再数据库中找到该信息，则需要在数据库中增加
-
-                now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-                print("需要插入新的手机或者类型：{}".format(type))
+                # print("需要插入新的手机或者类型：{}".format(type))
                 if status == -1:
                     status = 1
                 ele = TelAndMailInfo(companyid, type, value, status,beizhu, now_time, now_time)
-                db.session.add(ele)
                 try:
+                    db.session.add(ele)
                     db.session.flush()
                     # 输出新插入数据的主键
                     id = ele.id
                     # 此时数据才插入到数据库中
                     db.session.commit()
-                    print("插入插入新的手机或者类型成功：{}".format(type))
+                    # print("插入插入新的手机或者类型成功：{}".format(type))
                     # return {"flag": 1, "id": id}  # 插入了新数据
                 except Exception as e:
                     print(e)
@@ -336,11 +386,11 @@ def updateTelAndMailInDB(companyid,dataInDb,elements,type): # type= 1: 手机  2
 
 
 def updateTelAndMail(id, content):
-    companyid=id
 
-    print("==================companyid:{}".format(companyid))
+    companyid=id
+    # print("==================companyid:{}".format(companyid))
     dataInDb = TelAndMailInfo.query.filter(TelAndMailInfo.companyid == companyid).all()
-    print("===========电话等信息===dataInDB lenght:{}".format(len(dataInDb)))
+    # print("===========电话等信息===dataInDB lenght:{}".format(len(dataInDb)))
 
     tel =content[11]
     updateTelAndMailInDB(companyid, dataInDb, tel, 1)
@@ -349,7 +399,7 @@ def updateTelAndMail(id, content):
     qq = content[13]
     updateTelAndMailInDB(companyid, dataInDb, qq, 3)
     mail = content[14]
-    print("---------mail--------{}".format(mail))
+    # print("---------mail--------{}".format(mail))
     updateTelAndMailInDB(companyid, dataInDb, mail, 4)
 
 def getRealData(new,old,order=0):
@@ -503,45 +553,69 @@ def readLines(excelName,sheetName,linNumber):
     return {"flag":1,"data":data_list}
 
 # flask中的主函数
-def update(filePath,sheet_name,start,end):
+def update(insertId,filePath,sheet_name,start,end,isUseNewUser,isquchong):
+    companyListNotInDB=[]
     if filePath in ["",'',None,'\n','\r\n']:
         print("请输入确切的文件名称，或者确保文件路径正确")
         return {"flag": False, "tips": "请输入确切的文件名称，或者确保文件路径正确","count":""}
-    count = 0
-    start= start -1
-    end = end -1
-    if(start !=-1 and end !=-1 and end>=start):
-        rangeLine= range(start,end+1)
-        print(rangeLine)
-        for lineNumber in rangeLine:
-            print("开始读取行{0}\n".format(lineNumber))
-            content = readLines(filePath, sheet_name, lineNumber)
-            # {"flag": 1, "data": data_list}
-            if(content["flag"]==1):
-                companyName = content["data"][9]
-                if companyName!=None and companyName!="":
-                    updateDB(content["data"])
-                    print("文件:{0},行{1}处理完毕\n".format(filePath,lineNumber+1))
-                    count = count+1;
-            elif content["flag"]==0:
-                print("文件处理完毕\n")
-                break
-    else:
-        lineNumber = start
-        while(True): #一直读取数据直到最后一行
+    # 更新文件数据库
+    fileInformation = FileInfo.query.filter(FileInfo.id == insertId).first()
+    if fileInformation != None:
+        fileInformation.updateCount = fileInformation.updateCount+1  # 更新次数加1
+        now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+        fileInformation.updatetime = now_time
+        db.session.commit()
 
-            content = readLines(filePath, sheet_name, lineNumber)
-            if (content["flag"] == 1):
-                companyName = content["data"][9]
-                if companyName!=None and companyName!="":
-                    updateDB(content["data"])
-                    print("文件:{0},行{1}处理完毕\n".format(filePath,lineNumber+1))
-                    lineNumber = lineNumber + 1
-                    count = count + 1
-            elif content["flag"]==0:
-                print("文件处理完毕\n")
-                break
-    result = {"flag": True, "tips": "更新完毕","count":count}
+    try:
+        count = 0
+        start= start -1
+        end = end -1
+        if(start !=-1 and end !=-1 and end>=start):
+            rangeLine= range(start,end+1)
+            print(rangeLine)
+            for lineNumber in rangeLine:
+                print("开始读取行{0}\n".format(lineNumber))
+                content = readLines(filePath, sheet_name, lineNumber)
+                # {"flag": 1, "data": data_list}
+                if(content["flag"]==1):
+                    companyName = content["data"][9]
+                    if companyName!=None and companyName!="":
+                        resultUpdate=updateDB(content["data"],isUseNewUser)
+                        print("文件:{0},行{1}处理完毕\n".format(filePath,lineNumber+1))
+                        count = count+1;
+                        if(resultUpdate["flag"] == 2): # 说明数据库中没有这个公司
+                            companyListNotInDB.append(content["data"])
+                elif content["flag"]==0:
+                    print("文件处理完毕\n")
+                    break
+        else:
+            lineNumber = start
+            while(True): #一直读取数据直到最后一行
+                content = readLines(filePath, sheet_name, lineNumber)
+                if (content["flag"] == 1):
+                    companyName = content["data"][9]
+                    if companyName!=None and companyName!="":
+                        resultUpdate=updateDB(content["data"],isUseNewUser)
+                        print("文件:{0},行{1}处理完毕\n".format(filePath,lineNumber+1))
+                        lineNumber = lineNumber + 1
+                        count = count + 1
+                        if (resultUpdate["flag"] == 2):  # 说明数据库中没有这个公司
+                            companyListNotInDB.append(content["data"])
+                elif content["flag"]==0:
+                    print("文件处理完毕\n")
+                    break
+    except Exception as e:
+        print("这是我输出的信息")
+        print(e)
+    finally:
+        fileInformation = FileInfo.query.filter(FileInfo.id == insertId).first()
+        if fileInformation != None:
+            fileInformation.lineNumber = lineNumber  # 行数加1
+            now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+            fileInformation.updatetime = now_time
+            db.session.commit()
+        result = {"flag": False, "tips": "更新完毕", "count": count, "companyListNotInDB": companyListNotInDB}
+    result = {"flag": True, "tips": "更新完毕","count":count,"companyListNotInDB":companyListNotInDB}
     return result
 
 def main(opts):
