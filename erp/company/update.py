@@ -107,16 +107,16 @@ def updateDB(content,isUseNewUser): # content是从excel读取出来的每一行
 
         tempstoreName = ele.storeName
         if tempstoreName != None and tempstoreName != "":
-            if(storeName==""):
+            if storeName=="" :
                 storeName = tempstoreName
-            else:
+            elif tempstoreName not in storeName:
                 storeName = storeName+"|#|"+tempstoreName
 
         tempstoreCount = ele.countNumber
         if tempstoreCount != None and tempstoreCount != "":
             if(storeCount==0):
                 storeCount = int(tempstoreCount)
-            else:
+            elif tempstoreName not in storeName:
                 storeCount = storeCount+int(tempstoreCount)
 
         tempurl = ele.url
@@ -124,15 +124,16 @@ def updateDB(content,isUseNewUser): # content是从excel读取出来的每一行
             if(url==""):
                 url = tempurl
             else:
-                url = url+"|"+tempurl
+                tempurlList = tempurl.split("|")
+                for urlOne in tempurlList:
+                     if urlOne not in url:
+                        url = url+"|"+urlOne
 
         tempLink = ele.companyLink
         if tempLink!=None and tempLink!="":
             if(companyLink==""):
-
                 companyLink = tempLink
-            else:
-
+            elif tempLink not in companyLink:
                 companyLink = companyLink+"|"+tempLink
 
         baoliuId= pn[0].id
@@ -284,9 +285,12 @@ def updateQiYeType(ele, content):
 def updateTelAndMailInDB(companyid,dataInDb,elements,type): # type= 1: 手机  2：电话  3：qq 4: 邮箱
 
     elements=str(elements)
-    eleList = elements.split("; ")
-
+    eleList = elements.split(";") #按照;的方式区分
+    if len(eleList)==0:
+        return {"flag": 2}  # 数据库更新了
     for ele in eleList: # 遍历元素
+        if ele == "":
+            continue # 不更新这个元素
         dataInDbWithZero = TelAndMailInfo.query.filter(TelAndMailInfo.status == 0).all()  # 标记为0的电话
         now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         status = -1
@@ -294,7 +298,7 @@ def updateTelAndMailInDB(companyid,dataInDb,elements,type): # type= 1: 手机  2
         value = ""
              #0755-33048316 # 0|微信; 18138426123; 15813702599; 0755-8935819
         jinghaoSplit = ele.split("#")
-        value = jinghaoSplit[0]
+        value = str(jinghaoSplit[0])
         if(len(jinghaoSplit)>=2): #说明有备注和状态
             sb = jinghaoSplit[1].split("|")
             status = int(sb[0])
@@ -329,7 +333,7 @@ def updateTelAndMailInDB(companyid,dataInDb,elements,type): # type= 1: 手机  2
 
         #查看该手机或者电话是否在其他公司中标记了，如果其他公司已经标记了，且自己没有标注，就按照其他公司的对该信息的标注
         for zeroEle in dataInDbWithZero:
-            if zeroEle.type == type and eleInDB.value == value: #说明找到了这个元素
+            if zeroEle.type == type and zeroEle.value == value: #说明找到了这个元素
                 if status == -1:  # 如果没有状态，就用以前的状态
                     status = zeroEle.status
                 if  beizhu !=None and beizhu == "": # 如果没有说明，就用以前的说明
@@ -433,7 +437,11 @@ def updateCompany(ele,content,storeName,storeCount,url,companyLink,userid,jingyi
         if storeountNumber==None or storeountNumber=="":
             storeountNumber=1
 
-        newele = CompanyInfo(content[1], userid, content[3], content[4], content[5], storeountNumber, isHaveCang,content[8], \
+        cuxiaoCount = content[1]
+        if cuxiaoCount == None or cuxiaoCount == "":
+            cuxiaoCount = 0
+
+        newele = CompanyInfo(cuxiaoCount, userid, content[3], content[4], content[5], storeountNumber, isHaveCang,content[8], \
                           content[9], content[10],  content[15],content[16], \
                           jingyingid, content[18], tempziben, content[20], content[21], content[22], content[23],content[24],
                           content[25], content[26], content[27], qiyeTypeid, content[29], content[30], content[31],
@@ -570,6 +578,7 @@ def update(insertId,filePath,sheet_name,start,end,isUseNewUser,isquchong):
         count = 0
         start= start -1
         end = end -1
+        lineNumber = 0
         if(start !=-1 and end !=-1 and end>=start):
             rangeLine= range(start,end+1)
             print(rangeLine)
@@ -581,7 +590,15 @@ def update(insertId,filePath,sheet_name,start,end,isUseNewUser,isquchong):
                     companyName = content["data"][9]
                     if companyName!=None and companyName!="":
                         resultUpdate=updateDB(content["data"],isUseNewUser)
-                        print("文件:{0},行{1}处理完毕\n".format(filePath,lineNumber+1))
+                        print("文件1:{0},行{1}处理完毕\n".format(filePath,lineNumber+1))
+
+                        fileInformation = FileInfo.query.filter(FileInfo.id == insertId).first()
+                        if fileInformation != None:
+                            fileInformation.lineNumber = lineNumber  # 行数加1
+                            now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+                            fileInformation.updatetime = now_time
+                            db.session.commit()
+
                         count = count+1;
                         if(resultUpdate["flag"] == 2): # 说明数据库中没有这个公司
                             companyListNotInDB.append(content["data"])
@@ -596,7 +613,16 @@ def update(insertId,filePath,sheet_name,start,end,isUseNewUser,isquchong):
                     companyName = content["data"][9]
                     if companyName!=None and companyName!="":
                         resultUpdate=updateDB(content["data"],isUseNewUser)
-                        print("文件:{0},行{1}处理完毕\n".format(filePath,lineNumber+1))
+                        print("文件2:{0},行{1}处理完毕\n".format(filePath,lineNumber+1))
+                        # print("========insertId:{0}\n".format(insertId))
+                        fileInformation = FileInfo.query.filter(FileInfo.id == insertId).first()
+                        if fileInformation != None:
+                            # print("=======更新行数啦:{0}\n".format(lineNumber))
+                            fileInformation.lineNumber = lineNumber  # 行数加1
+                            now_time = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+                            fileInformation.updatetime = now_time
+                            db.session.commit()
+
                         lineNumber = lineNumber + 1
                         count = count + 1
                         if (resultUpdate["flag"] == 2):  # 说明数据库中没有这个公司

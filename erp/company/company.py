@@ -13,6 +13,7 @@ from user.models.userInfo import *
 from .models.fileInfo import *
 
 import os
+import _thread
 import datetime, uuid
 
 from flask import make_response
@@ -217,7 +218,7 @@ def saveCompany(companyListNotInDB, target_path, realfilename):
     table = wb.active
 
     # excel创建的工作表名默认为sheet1,一下代码实现了给新创建的工作表创建一个新的名字
-    table.title = 'ali数据'
+    table.title = 'Sheet1'
 
     i = 0
     for rowele in companyListNotInDB:
@@ -265,14 +266,18 @@ def reupdate():
     fileInformation = FileInfo.query.filter(FileInfo.id == idn).first()
     name = fileInformation.changeName
     realfilename = fileInformation.name
-
+    lineNumber = fileInformation.lineNumber
     start = 2
+    if lineNumber!= None and lineNumber!="" and lineNumber!="null":
+        start = lineNumber
+
     end = -1
     savePath = "upload"
     sheetName = ""
     isUseNewUser = 1
     isquchong = 1
-    reUpdateCompany(idn, start, end, savePath, name, sheetName, isUseNewUser, isquchong, realfilename)
+    # reUpdateCompany(idn, start, end, savePath, name, sheetName, isUseNewUser, isquchong, realfilename)
+    _thread.start_new_thread(reUpdateCompany, (idn, start, end, savePath, name, sheetName, isUseNewUser, isquchong, realfilename))
 
     return jsonify({"flag":1})
 
@@ -346,7 +351,8 @@ def upload():
     sheetName = ""
     isUseNewUser = 1
     isquchong = 1
-    reUpdateCompany(insertId, start, end, savePath, filename, sheetName, isUseNewUser, isquchong, realfilename)
+    # reUpdateCompany(insertId, start, end, savePath, filename, sheetName, isUseNewUser, isquchong, realfilename)
+    _thread.start_new_thread(reUpdateCompany,(insertId, start, end, savePath, filename, sheetName, isUseNewUser, isquchong, realfilename))
 
     return redirect('/p/uploadhtml')
     # return render_template('upload/upload.html')

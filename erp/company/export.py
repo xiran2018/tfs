@@ -181,7 +181,7 @@ def generateExcel(results,target_path,excelName,isFromFileNumber):
     table = wb.active
 
     # excel创建的工作表名默认为sheet1,一下代码实现了给新创建的工作表创建一个新的名字
-    table.title = 'ali数据'
+    table.title = 'Sheet1'
 
 
     # 设置表头字体居中
